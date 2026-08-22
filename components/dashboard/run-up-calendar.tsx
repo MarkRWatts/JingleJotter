@@ -92,7 +92,7 @@ function MonthGrid({ year, month, today }: { year: number; month: number; today:
           let cls =
             "relative flex aspect-square items-center justify-center rounded-md tabular-nums ";
           if (isChristmas) cls += "bg-berry font-bold text-white ";
-          else if (isEve) cls += "bg-amber/25 font-semibold text-cocoa ";
+          else if (isEve) cls += "bg-berry/20 font-semibold text-berry-deep ";
           else if (isToday)
             cls += "rounded-full bg-pine/25 font-bold text-pine-deep shadow-md ring-2 ring-amber ";
           else if (isWeekend) cls += "bg-tag text-cocoa ";
