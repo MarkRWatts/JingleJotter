@@ -7,6 +7,7 @@
 // auth()-or-redirect check.
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { TopNav } from "./top-nav";
 import { BottomTabs } from "./bottom-tabs";
 import { Rooftops } from "@/components/dashboard/rooftops";
@@ -20,7 +21,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <TopNav user={{ name: session.user.name, email: session.user.email }} />
+      <TopNav
+        user={{ name: session.user.name, email: session.user.email }}
+        showWhimsy={
+          (await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { showWhimsy: true },
+          }))?.showWhimsy ?? true
+        }
+      />
       <main className="flex-1 pb-24 md:pb-0">
         {children}
         {/* Every page signs off with the snowy skyline. */}

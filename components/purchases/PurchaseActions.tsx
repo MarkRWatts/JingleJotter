@@ -90,7 +90,11 @@ export default function PurchaseActions({
         window.alert(result.error);
         return;
       }
-      if (willWrap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (
+        willWrap &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        document.body.dataset.whimsy !== "off"
+      ) {
         setCelebrate(true);
       }
     });

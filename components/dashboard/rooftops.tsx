@@ -184,7 +184,7 @@ function Sparkle({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number;
 
 export function Rooftops() {
   return (
-    <div className="-mb-6 w-full md:-mb-8" aria-hidden="true">
+    <div className="whimsy-decor -mb-6 w-full md:-mb-8" aria-hidden="true">
       <svg viewBox="0 0 1200 190" className="block h-auto w-full" role="presentation">
         {/* Crescent moon */}
         <circle cx={74} cy={38} r={14} fill="var(--amber)" />

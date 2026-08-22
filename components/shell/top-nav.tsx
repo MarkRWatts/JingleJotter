@@ -4,6 +4,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
+import { toggleWhimsy } from "@/app/actions/prefs";
 import { NavLinks } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
 
@@ -16,7 +18,7 @@ function initial(user: ShellUser): string {
   return (user.name ?? user.email ?? "?").trim().charAt(0).toUpperCase() || "?";
 }
 
-export function TopNav({ user }: { user: ShellUser }) {
+export function TopNav({ user, showWhimsy }: { user: ShellUser; showWhimsy: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b border-cocoa/10 bg-cream/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 md:px-6">
@@ -35,6 +37,22 @@ export function TopNav({ user }: { user: ShellUser }) {
         <NavLinks />
 
         <div className="flex items-center gap-2 md:gap-3">
+          <form action={toggleWhimsy}>
+            <button
+              type="submit"
+              title={showWhimsy ? "Turn festive decorations off" : "Turn festive decorations on"}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+                showWhimsy
+                  ? "bg-amber/20 text-amber hover:bg-amber/30"
+                  : "text-cocoa-soft/60 hover:bg-tag hover:text-cocoa-soft"
+              }`}
+            >
+              <Sparkles size={16} aria-hidden="true" />
+              <span className="sr-only">
+                {showWhimsy ? "Turn festive decorations off" : "Turn festive decorations on"}
+              </span>
+            </button>
+          </form>
           <div className="hidden items-center gap-2 md:flex">
             <span
               className="flex h-8 w-8 items-center justify-center rounded-full bg-tag text-sm font-semibold text-pine-deep"

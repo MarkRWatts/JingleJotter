@@ -52,6 +52,12 @@ body {
 
 /* ---- Whimsy pass -------------------------------------------------- */
 
+/* Per-user festive-decoration switch: the layout stamps data-whimsy on
+   <body> from User.showWhimsy; pure decorations carry .whimsy-decor. */
+[data-whimsy="off"] .whimsy-decor {
+  display: none;
+}
+
 /* Shared gentle twinkle for header sparkles + fairy-light bulbs. */
 @keyframes twinkle {
   0%,

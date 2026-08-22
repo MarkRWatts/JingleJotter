@@ -14,7 +14,7 @@ export function FairyLights() {
     <svg
       aria-hidden="true"
       viewBox="0 0 900 44"
-      className="h-auto w-full"
+      className="whimsy-decor h-auto w-full"
       role="presentation"
     >
       <path

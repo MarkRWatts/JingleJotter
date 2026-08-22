@@ -14,7 +14,7 @@ const SPARKLE_SPOTS: { style: CSSProperties; className: string; size: number; de
 
 export function HeaderSparkles() {
   return (
-    <>
+    <span className="whimsy-decor" aria-hidden="true">
       {SPARKLE_SPOTS.map((spot, i) => (
         <Sparkles
           key={i}
@@ -29,6 +29,6 @@ export function HeaderSparkles() {
         className="twinkle pointer-events-none absolute h-1.5 w-1.5 rounded-full bg-pine"
         style={{ top: "2px", right: "-9px", animationDelay: "1.8s" }}
       />
-    </>
+    </span>
   );
 }
