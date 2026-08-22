@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PURCHASE_STATUSES, STATUS_LABELS } from "@/lib/domain";
 import type { SelectOption } from "./types";
 
@@ -22,14 +22,16 @@ export default function FilterBar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   function buildHref(next: Partial<Selected>): string {
+    // Start from the live URL so unrelated params (sort/dir, year) survive.
+    const params = new URLSearchParams(searchParams.toString());
     const merged = { ...selected, ...next };
-    const params = new URLSearchParams();
-    if (merged.year) params.set("year", merged.year);
-    if (merged.category) params.set("category", merged.category);
-    if (merged.person) params.set("person", merged.person);
-    if (merged.status) params.set("status", merged.status);
+    for (const key of ["category", "person", "status"] as const) {
+      if (merged[key]) params.set(key, merged[key]!);
+      else params.delete(key);
+    }
     const qs = params.toString();
     return qs ? `${pathname}?${qs}` : pathname;
   }

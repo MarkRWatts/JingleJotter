@@ -11,6 +11,7 @@ import QuickAddForm from "@/components/purchases/QuickAddForm";
 import FilterBar from "@/components/purchases/FilterBar";
 import PurchaseList from "@/components/purchases/PurchaseList";
 import type { PurchaseListItem } from "@/components/purchases/types";
+import { parseSort, sortPurchases } from "@/components/purchases/sort";
 
 export default async function PurchasesPage({
   searchParams,
@@ -20,13 +21,15 @@ export default async function PurchasesPage({
     category?: string;
     person?: string;
     status?: string;
+    sort?: string;
+    dir?: string;
   }>;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/signin");
 
-  const { year, category, person, status } = await searchParams;
+  const { year, category, person, status, sort, dir } = await searchParams;
   const season = await resolveSeason(year);
 
   if (!season) {
@@ -67,7 +70,9 @@ export default async function PurchasesPage({
     orderBy: { createdAt: "desc" },
   });
 
-  const purchases: PurchaseListItem[] = purchasesRaw.map((raw) => {
+  const sorting = parseSort(sort, dir);
+  const purchases: PurchaseListItem[] = sortPurchases(
+    purchasesRaw.map((raw) => {
     const masked = maskPurchase(raw, userId);
     return {
       id: masked.id,
@@ -75,6 +80,7 @@ export default async function PurchasesPage({
       store: masked.store,
       pricePence: masked.pricePence,
       purchasedOn: masked.purchasedOn ? masked.purchasedOn.toISOString() : null,
+      createdAt: masked.createdAt.toISOString(),
       status: masked.status as PurchaseStatus,
       notes: masked.notes,
       categoryId: masked.categoryId,
@@ -83,7 +89,10 @@ export default async function PurchasesPage({
       personName: masked.person?.name ?? null,
       isMasked: masked.isMasked,
     };
-  });
+    }),
+    sorting.key,
+    sorting.dir,
+  );
 
   const actualSpendPence = purchases
     .filter((p) => isActualSpend(p.status))
@@ -136,6 +145,7 @@ export default async function PurchasesPage({
         categories={categoryOptions}
         people={peopleOptions}
         readOnly={readOnly}
+        sort={sorting}
       />
     </div>
   );

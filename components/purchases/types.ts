@@ -8,6 +8,7 @@ export type PurchaseListItem = {
   store: string | null;
   pricePence: number;
   purchasedOn: string | null;
+  createdAt: string;
   status: PurchaseStatus;
   notes: string | null;
   categoryId: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useState, useTransition, type CSSProperties } from "react";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { advanceStatus, deletePurchase } from "@/app/actions/purchases";
 import { STATUS_LABELS, nextStatus, type PurchaseStatus } from "@/lib/domain";
@@ -39,7 +39,9 @@ function makeConfettiPieces(): ConfettiPiece[] {
 }
 
 function ConfettiBurst({ onDone }: { onDone: () => void }) {
-  const pieces = useRef(makeConfettiPieces()).current;
+  // Lazy state initializer: random pieces computed once per mount,
+  // without touching a ref during render.
+  const [pieces] = useState(makeConfettiPieces);
 
   useEffect(() => {
     const timer = window.setTimeout(onDone, 780);
