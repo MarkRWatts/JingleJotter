@@ -18,19 +18,26 @@ export default async function SignInPage({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-cream px-6 py-10">
-      <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-squircle bg-tag p-8 text-center shadow-sm">
+      <div className="flex w-full max-w-sm flex-col items-center gap-8 text-center md:max-w-3xl">
+        {/* The hero graphics carry their own cream background, so they sit
+            straight on the page — no card. h1 stays for accessibility. */}
+        <h1 className="sr-only">Jingle Jotter — keep the Christmas budget merry and bright</h1>
         <Image
-          src="/brand/logo.png"
-          alt="Jingle Jotter"
-          width={96}
-          height={96}
-          className="h-24 w-24"
+          src="/brand/login-mobile.png"
+          alt=""
+          width={853}
+          height={1844}
+          className="w-full max-w-xs rounded-squircle shadow-sm md:hidden"
           priority
         />
-        <div className="flex flex-col gap-1">
-          <h1 className="font-display text-2xl text-cocoa">Jingle Jotter</h1>
-          <p className="text-sm text-cocoa-soft">Keep the Christmas budget merry and bright</p>
-        </div>
+        <Image
+          src="/brand/login-desktop.png"
+          alt=""
+          width={1774}
+          height={887}
+          className="hidden w-full rounded-squircle shadow-sm md:block"
+          priority
+        />
 
         {error && (
           <p className="rounded-lg bg-berry/10 px-4 py-3 text-sm text-berry-deep">
@@ -43,7 +50,7 @@ export default async function SignInPage({
             "use server";
             await signIn("google", { redirectTo: "/" });
           }}
-          className="w-full"
+          className="w-full max-w-xs"
         >
           <button
             type="submit"
