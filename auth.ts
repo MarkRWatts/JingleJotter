@@ -24,6 +24,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      // A User row can exist before its first Google sign-in (seeded in dev,
+      // or pre-created for linking). Without this, the adapter refuses with
+      // OAuthAccountNotLinked. Safe here: Google verifies emails and the
+      // signIn callback allowlists two known addresses.
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
+import { SubmitButton } from "./submit-button";
 
 export default async function SignInPage({
   searchParams,
@@ -27,6 +28,7 @@ export default async function SignInPage({
           alt=""
           width={833}
           height={1282}
+          sizes="320px"
           className="w-full max-w-xs rounded-squircle shadow-sm md:hidden"
           priority
         />
@@ -35,15 +37,20 @@ export default async function SignInPage({
           alt=""
           width={1774}
           height={887}
+          sizes="(min-width: 768px) 720px, 320px"
           className="hidden w-full rounded-squircle shadow-sm md:block"
           priority
         />
 
-        {error && (
+        {error === "AccessDenied" ? (
           <p className="rounded-lg bg-berry/10 px-4 py-3 text-sm text-berry-deep">
             This sleigh is invite-only — that account isn&apos;t on the list.
           </p>
-        )}
+        ) : error ? (
+          <p className="rounded-lg bg-amber/15 px-4 py-3 text-sm text-cocoa">
+            Sign-in hit a snag ({error}) — try again in a moment.
+          </p>
+        ) : null}
 
         <form
           action={async () => {
@@ -52,13 +59,10 @@ export default async function SignInPage({
           }}
           className="w-full max-w-xs"
         >
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-3 rounded-full bg-berry px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-berry-deep"
-          >
+          <SubmitButton>
             <GoogleLogo />
             Sign in with Google
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </main>
