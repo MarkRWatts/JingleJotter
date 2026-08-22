@@ -1,0 +1,161 @@
+// Jingle Jotter data model — a Christmas budget/gift tracker.
+//
+// SQLite (no native enums), so kind/status fields are strings constrained by
+// the constants in ../lib/domain.ts:
+//   Category.kind:    GIFTS | FOOD | EXTRAS | CITY_BREAK | OTHER
+//   Purchase.status:  IDEA | PURCHASED | ARRIVED | WRAPPED
+//
+// Money is always an integer number of pence — never a float.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// --- Auth.js (next-auth v5) standard models, per @auth/prisma-adapter ---
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  // Optional link from a login to the Person they represent in the tracker,
+  // so we can mask/hide purchases bought FOR that person (surprise-proofing).
+  // This is the one relation between User and Person; personId is the FK
+  // column that lives on this side. Person's back-reference (`linkedUser`)
+  // is the inverse of this same relation, not a second one.
+  personId String? @unique
+  person   Person? @relation(fields: [personId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Jingle Jotter domain models ---
+
+// One Christmas. Only one Season is ever `active` at a time (enforced in app
+// code, not the schema); everything else hangs off a Season.
+model Season {
+  id        String   @id @default(cuid())
+  year      Int      @unique
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  categories    Category[]
+  purchases     Purchase[]
+  personBudgets PersonBudget[]
+}
+
+// A spending bucket within a Season (Gifts, Food, Festive Extras, City
+// Break, plus any number of ad-hoc "OTHER" categories — hence the unique
+// constraint is on (seasonId, name), not (seasonId, kind).
+model Category {
+  id          String @id @default(cuid())
+  seasonId    String
+  season      Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  name        String
+  kind        String // GIFTS | FOOD | EXTRAS | CITY_BREAK | OTHER — see lib/domain.ts
+  budgetPence Int    @default(0)
+  sortOrder   Int    @default(0)
+
+  purchases Purchase[]
+
+  @@unique([seasonId, name])
+}
+
+// A gift recipient (or household member being budgeted for). Optionally
+// linked to a User login, in which case the app hides/masks purchases
+// bought for them when that User is signed in.
+model Person {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  // Inverse side of User.personId — see the comment there.
+  linkedUser User?
+
+  personBudgets PersonBudget[]
+  purchases     Purchase[]
+}
+
+// How much of a Season's budget is earmarked for a given Person.
+model PersonBudget {
+  id             String @id @default(cuid())
+  personId       String
+  person         Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  seasonId       String
+  season         Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  allocatedPence Int    @default(0)
+
+  @@unique([personId, seasonId])
+}
+
+// A single gift/item — idea through to wrapped. personId is the recipient
+// and is nullable (e.g. a Food or City Break line has no recipient).
+model Purchase {
+  id          String    @id @default(cuid())
+  seasonId    String
+  season      Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  personId    String?
+  person      Person?   @relation(fields: [personId], references: [id], onDelete: SetNull)
+  title       String
+  store       String?
+  pricePence  Int
+  purchasedOn DateTime?
+  status      String    @default("IDEA") // IDEA | PURCHASED | ARRIVED | WRAPPED — see lib/domain.ts
+  notes       String?
+  url         String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([seasonId])
+  @@index([categoryId])
+  @@index([personId])
+}

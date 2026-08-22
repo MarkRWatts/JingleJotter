@@ -5,19 +5,22 @@
 
 export const SURPRISE_TITLE = "🎁 Surprise";
 
+// The person→user link lives on User.personId; Person exposes it as the
+// `linkedUser` relation object, so queries must `include: { person:
+// { include: { linkedUser: { select: { id: true } } } } }`.
 export type MaskablePurchase = {
   title: string;
   store: string | null;
   notes: string | null;
   url: string | null;
-  person?: { linkedUserId: string | null } | null;
+  person?: { linkedUser: { id: string } | null } | null;
 };
 
 export function isSurpriseFor(
-  purchase: { person?: { linkedUserId: string | null } | null },
+  purchase: { person?: { linkedUser: { id: string } | null } | null },
   currentUserId: string,
 ): boolean {
-  return purchase.person?.linkedUserId === currentUserId;
+  return purchase.person?.linkedUser?.id === currentUserId;
 }
 
 /** Returns a copy with identifying fields masked when the purchase is a

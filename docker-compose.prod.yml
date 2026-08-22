@@ -1,0 +1,17 @@
+# VM deployment overlay — used via:
+#   docker compose --env-file .env.docker -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# `app` joins the shared `edge` Docker network (external, created once on the
+# VM) instead of publishing a host port. The single shared Caddy instance
+# reverse-proxies to `app` by its `jinglejotter` alias on that network
+# (site block in ~/edge/Caddyfile: `reverse_proxy jinglejotter:3000`).
+services:
+  app:
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - jinglejotter
+
+networks:
+  edge:
+    external: true
