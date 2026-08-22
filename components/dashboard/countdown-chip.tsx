@@ -17,7 +17,7 @@ export function CountdownChip({ year }: { year: number }) {
       ) : (
         <>
           <Sparkles size={16} className="text-amber" aria-hidden="true" />
-          {days === 0 ? "It's here!" : `${days} day${days === 1 ? "" : "s"} to go`}
+          {days === 0 ? "It's here!" : `${days} sleep${days === 1 ? "" : "s"} 'til Christmas`}
         </>
       )}
     </span>

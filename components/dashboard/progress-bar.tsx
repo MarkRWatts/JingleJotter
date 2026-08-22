@@ -24,7 +24,7 @@ export function ProgressBar({
       aria-valuemax={100}
     >
       <div
-        className={`h-full rounded-full transition-all ${over ? "bg-berry" : "bg-pine"}`}
+        className={`candy-stripe h-full rounded-full transition-all ${over ? "bg-berry" : "bg-pine"}`}
         style={{ width: `${width}%` }}
       />
     </div>

@@ -16,6 +16,9 @@ import { SeasonTotalsStrip } from "@/components/dashboard/season-totals-strip";
 import { CountdownChip } from "@/components/dashboard/countdown-chip";
 import { YearSwitcher } from "@/components/dashboard/year-switcher";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { FairyLights } from "@/components/dashboard/fairy-lights";
+import { HeaderSparkles } from "@/components/dashboard/header-sparkles";
+import { RunUpCalendar } from "@/components/dashboard/run-up-calendar";
 
 export default async function DashboardPage({
   searchParams,
@@ -51,11 +54,17 @@ export default async function DashboardPage({
       {/* Header row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-3xl text-pine-deep">Christmas {season.year}</h1>
+          <span className="relative inline-block">
+            <h1 className="font-display text-3xl text-pine-deep">Christmas {season.year}</h1>
+            <HeaderSparkles />
+          </span>
           <CountdownChip year={season.year} />
         </div>
         <YearSwitcher years={years} activeYear={season.year} />
       </div>
+
+      {/* The run-up: Sep–Dec mini calendars, collapsed by default */}
+      <RunUpCalendar year={season.year} />
 
       {/* Category budget cards */}
       <section className="flex flex-col gap-3">
@@ -75,15 +84,20 @@ export default async function DashboardPage({
 
       {/* Per-person gift grid */}
       {people.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="font-display text-xl text-pine-deep">Gifts by person</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {people.map((person) => (
-              <PersonCard key={person.id} person={person} />
-            ))}
-          </div>
-        </section>
+        <>
+          <FairyLights />
+          <section className="flex flex-col gap-3">
+            <h2 className="font-display text-xl text-pine-deep">Gifts by person</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {people.map((person) => (
+                <PersonCard key={person.id} person={person} />
+              ))}
+            </div>
+          </section>
+        </>
       )}
+
+      <FairyLights />
 
       {/* Recent purchases */}
       <section className="flex flex-col gap-3">

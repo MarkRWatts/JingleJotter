@@ -35,3 +35,122 @@ body {
   color: var(--cocoa);
   font-family: var(--font-nunito), ui-rounded, system-ui, sans-serif;
 }
+
+/* ---- Whimsy pass -------------------------------------------------- */
+
+/* Shared gentle twinkle for header sparkles + fairy-light bulbs. */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.twinkle {
+  animation: twinkle 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes bulb-twinkle {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.bulb-twinkle {
+  animation: bulb-twinkle 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twinkle,
+  .bulb-twinkle {
+    animation: none;
+  }
+}
+
+/* Gift-tag person cards: the clipped top-left corner + alternating tilt
+   that reads as a stack of loosely-scattered gift tags. */
+.gift-tag-shape {
+  border-top-right-radius: 1.25rem;
+  border-bottom-right-radius: 1.25rem;
+  border-bottom-left-radius: 1.25rem;
+  border-top-left-radius: 0;
+  clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);
+}
+
+.gift-tag-card--over {
+  background: color-mix(in srgb, var(--tag-cream) 82%, var(--berry) 18%);
+}
+
+.gift-tag-card {
+  transition: transform 200ms ease;
+  transform: rotate(-1deg);
+}
+
+.gift-tag-card:nth-child(even) {
+  transform: rotate(1deg);
+}
+
+.gift-tag-card:hover,
+.gift-tag-card:focus-within {
+  transform: rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gift-tag-card {
+    transition: none;
+  }
+}
+
+/* Candy-stripe overlay for progress-bar fills. */
+.candy-stripe {
+  position: relative;
+}
+
+.candy-stripe::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.12) 0,
+    rgba(255, 255, 255, 0.12) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
+/* Confetti burst fired from the purchase-actions "wrapped" button. */
+@keyframes confetti-pop {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  animation: confetti-pop 700ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    display: none;
+  }
+}
