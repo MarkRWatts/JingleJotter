@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Jingle Jotter palette — drawn from the logo artwork in public/brand/:
+   cream squircle background, berry-red gift box, pine-green ribbon,
+   amber sparkles, pale gift-tag cream. Light cosy theme only. */
+:root {
+  --cream: #faf3e4;
+  --tag-cream: #f5e9ce;
+  --berry: #d9382e;
+  --berry-deep: #b02a22;
+  --pine: #1f6b45;
+  --pine-deep: #14532d;
+  --amber: #e9a63c;
+  --cocoa: #4a3728;
+  --cocoa-soft: #8a715c;
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-tag: var(--tag-cream);
+  --color-berry: var(--berry);
+  --color-berry-deep: var(--berry-deep);
+  --color-pine: var(--pine);
+  --color-pine-deep: var(--pine-deep);
+  --color-amber: var(--amber);
+  --color-cocoa: var(--cocoa);
+  --color-cocoa-soft: var(--cocoa-soft);
+  --font-display: var(--font-fredoka);
+  --font-sans: var(--font-nunito);
+  --radius-squircle: 1.75rem;
+}
+
+body {
+  background: var(--cream);
+  color: var(--cocoa);
+  font-family: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+}
