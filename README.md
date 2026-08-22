@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/brand/login-desktop.png" alt="Jingle Jotter — keep the Christmas budget merry and bright" width="720" />
+</p>
 
-## Getting Started
+<h1 align="center">Jingle Jotter</h1>
 
-First, run the development server:
+<p align="center"><em>A cosy, self-hosted Christmas budget &amp; gift tracker for your household.</em></p>
+
+Jingle Jotter replaces the annual Christmas spreadsheet: one warm little web app
+that tracks every gift idea from "maybe?" to wrapped-under-the-tree, keeps four
+budgets honest (gifts, food, festive extras, and the December city break), and
+rolls forward year after year so past Christmases become a browsable archive.
+
+## Features
+
+- **Purchase pipeline** — every item moves Idea → Purchased → Arrived → Wrapped,
+  with one-tap advancing (and a little confetti burst when something gets wrapped).
+  Ideas count toward a "planned" figure, never the actual spend.
+- **Budgets that tell the truth** — four categories out of the box (add your own),
+  each with progress bars, over-budget warnings, and planned-vs-actual totals.
+- **Per-person gift tracking** — allocations per recipient, spend vs budget,
+  status counts, and gift-tag-shaped cards that earn a bow when everything's wrapped.
+- **Surprise-proof** — link a login to a person and gifts *for* them are masked
+  from *their* account (title hidden, no edit access, their own summary card
+  omitted) while still counting toward shared budgets. Plan your partner's gifts
+  in the same app they use.
+- **City break planner** — itinerary by day with automatic meal-gap detection
+  (arrival-night dinner, full-day meals, departure breakfast), a dedicated hotel
+  section with booking references, and an OpenStreetMap view with venues
+  geocoded automatically from their names.
+- **Seasons** — one active (writable) season; every past year is a read-only
+  archive. Starting a new season copies people and budgets forward with a clean
+  slate of purchases. People are global identities with per-season membership,
+  so pruning this year's list can never damage last year's history.
+- **The run-up calendar** — September to December at a glance, weekends tinted,
+  Christmas days highlighted, days already gone snowed over with a "you are here"
+  marker (plus sleeps-until-Christmas and shopping-weekends-left counters).
+- **Cosy by design** — hand-drawn snowy rooftops, fairy lights, and a festive
+  display face… all behind a per-user whimsy switch for when you want it calm.
+- Fully responsive: desktop tables, mobile cards and bottom-tab navigation.
+
+## Screenshots
+
+| Dashboard | City break planner |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Trip planner](docs/screenshots/trip.png) |
+
+| Purchases | Mobile |
+| --- | --- |
+| ![Purchases](docs/screenshots/purchases.png) | ![Mobile dashboard](docs/screenshots/mobile-dashboard.png) |
+
+## Stack
+
+Next.js 16 (App Router, server actions) · React 19 · TypeScript · Tailwind CSS 4 ·
+Prisma 7 on SQLite (`better-sqlite3` — no database server to run) · next-auth v5
+with Google sign-in gated by an email allowlist · Leaflet + OpenStreetMap +
+Nominatim for the trip map · Docker Compose for deployment.
+
+## Self-hosting
+
+The app is a single container; the SQLite database lives in a named volume and
+migrations run automatically on boot.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/MarkRWatts/JingleJotter.git
+cd JingleJotter
+cp .env.docker.example .env.docker   # then edit: secrets + your allowed emails
+docker compose up -d --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Local dev instead: `npm install`, copy `.env.example` to `.env`, then
+`npx prisma migrate dev`, `npx prisma db seed`, and `npm run dev`
+(port 3003).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Google sign-in
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create an OAuth client in the [Google Cloud console](https://console.cloud.google.com/)
+(type "Web application") with redirect URIs for
+`http://localhost:3003/api/auth/callback/google` and
+`https://your-domain/api/auth/callback/google`, put the client ID/secret in your
+env file, and list the Google account emails allowed to sign in as a
+comma-separated `ALLOWED_EMAILS`. While the OAuth consent screen is in Testing
+mode, add those same accounts as test users.
 
-## Learn More
+| Variable | Purpose |
+| --- | --- |
+| `AUTH_SECRET` | Session encryption — `openssl rand -base64 32` |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | The OAuth client above |
+| `ALLOWED_EMAILS` | Comma-separated allowlist of Google accounts |
+| `AUTH_URL` | The app's canonical external URL |
+| `DATABASE_URL` | SQLite path (defaulted in compose to the data volume) |
 
-To learn more about Next.js, take a look at the following resources:
+Reverse-proxy TLS, backups (the database is one file — archive the volume), and
+DNS are yours to taste; any HTTPS-terminating proxy in front of port 3000 works.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[GPL-3.0-or-later](LICENSE). Built with care (and a considerable quantity of
+mulled wine metaphors) for one household's Decembers — shared in case it makes
+yours merrier too.
