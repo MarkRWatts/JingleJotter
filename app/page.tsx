@@ -55,7 +55,7 @@ export default async function DashboardPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <span className="relative inline-block">
-            <h1 className="font-display text-3xl text-pine-deep">Christmas {season.year}</h1>
+            <h1 className="font-festive text-4xl text-pine-deep">Christmas {season.year}</h1>
             <HeaderSparkles />
           </span>
           <CountdownChip year={season.year} />

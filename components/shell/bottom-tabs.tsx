@@ -24,11 +24,11 @@ export function BottomTabs() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${
+              className={`flex flex-1 flex-col items-center gap-0.5 px-0.5 py-1.5 text-[10px] font-semibold whitespace-nowrap transition ${
                 active ? "text-berry" : "text-cocoa-soft"
               }`}
             >
-              <Icon size={22} strokeWidth={active ? 2.5 : 2} aria-hidden="true" />
+              <Icon size={20} strokeWidth={active ? 2.5 : 2} aria-hidden="true" />
               {item.tabLabel}
             </Link>
           );

@@ -89,6 +89,7 @@ model Season {
   categories    Category[]
   purchases     Purchase[]
   personBudgets PersonBudget[]
+  trip          Trip?
 }
 
 // A spending bucket within a Season (Gifts, Food, Festive Extras, City
@@ -133,6 +134,46 @@ model PersonBudget {
   allocatedPence Int    @default(0)
 
   @@unique([personId, seasonId])
+}
+
+// The December city break for a Season: one Trip, holding itinerary items.
+// Money still flows through Purchase rows in the CITY_BREAK category — the
+// trip page is planning (what/when/booked), not a second ledger.
+model Trip {
+  id          String   @id @default(cuid())
+  seasonId    String   @unique
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  destination String   @default("London")
+  startDate   DateTime
+  endDate     DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  items TripItem[]
+}
+
+// One itinerary entry. type: HOTEL | MEAL | TRAVEL | ACTIVITY | OTHER;
+// mealSlot (BREAKFAST | LUNCH | DINNER) only applies to MEAL — see lib/trip.ts.
+model TripItem {
+  id        String    @id @default(cuid())
+  tripId    String
+  trip      Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  date      DateTime?
+  mealSlot  String?
+  time      String?
+  venue     String?
+  booked    Boolean   @default(false)
+  notes     String?
+  // Geocoded from `venue` + trip destination via Nominatim (lib/geocode.ts);
+  // null when the venue is empty or couldn't be resolved.
+  lat       Float?
+  lng       Float?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([tripId])
 }
 
 // A single gift/item — idea through to wrapped. personId is the recipient

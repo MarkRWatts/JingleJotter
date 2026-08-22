@@ -26,6 +26,7 @@
   --color-cocoa: var(--cocoa);
   --color-cocoa-soft: var(--cocoa-soft);
   --font-display: var(--font-fredoka);
+  --font-festive: var(--font-mountains);
   --font-sans: var(--font-nunito);
   --radius-squircle: 1.75rem;
 }
@@ -34,6 +35,12 @@ body {
   background: var(--cream);
   color: var(--cocoa);
   font-family: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+}
+
+/* Mountains of Christmas (page titles only) is a light hand-drawn face —
+   always use its bold cut. */
+.font-festive {
+  font-weight: 700;
 }
 
 /* ---- Whimsy pass -------------------------------------------------- */

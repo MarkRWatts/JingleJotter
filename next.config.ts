@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // No dev-tools indicator overlay — it sits over the bottom nav.
+  devIndicators: false,
 };
 
 export default nextConfig;

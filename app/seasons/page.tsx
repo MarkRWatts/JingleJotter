@@ -46,7 +46,7 @@ export default async function SeasonsPage() {
       <header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <CalendarRange size={22} className="text-berry" />
-          <h1 className="font-display text-2xl text-pine-deep sm:text-3xl">Seasons</h1>
+          <h1 className="font-festive text-3xl text-pine-deep sm:text-4xl">Seasons</h1>
         </div>
         <p className="text-sm text-cocoa-soft">One Christmas per season, all in one place.</p>
       </header>

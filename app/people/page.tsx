@@ -129,7 +129,7 @@ async function PeopleAndBudgets({
       <header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Users size={22} className="text-berry" />
-          <h1 className="font-display text-2xl text-pine-deep sm:text-3xl">
+          <h1 className="font-festive text-3xl text-pine-deep sm:text-4xl">
             People &amp; Budgets
           </h1>
         </div>

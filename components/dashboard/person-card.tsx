@@ -40,38 +40,6 @@ export function PersonCard({ person }: { person: PersonSummary }) {
         <span className="absolute left-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-cream ring-1 ring-inset ring-cocoa-soft/40" />
       </div>
 
-      {/* Bow marker when every purchase for this person is wrapped */}
-      {/* Kept inside the card bounds — the tag clip-path crops anything
-          hanging over the edge. */}
-      {allWrapped && (
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 32 24"
-          className="pointer-events-none absolute right-3 top-1.5 h-6 w-8"
-        >
-          <path
-            d="M16 12 C13 4 4 3 4 9 C4 14 11 14.5 16 12 Z"
-            fill="var(--berry)"
-            stroke="var(--berry-deep)"
-            strokeWidth="1"
-          />
-          <path
-            d="M16 12 C19 4 28 3 28 9 C28 14 21 14.5 16 12 Z"
-            fill="var(--berry)"
-            stroke="var(--berry-deep)"
-            strokeWidth="1"
-          />
-          <path
-            d="M15 13 C13 17 12 19 10 21 M17 13 C19 17 20 19 22 21"
-            stroke="var(--pine)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <circle cx="16" cy="12" r="3" fill="var(--berry-deep)" />
-        </svg>
-      )}
-
       <div className="flex items-baseline justify-between gap-2 pl-3">
         <h3 className="font-display text-base text-pine-deep">{name}</h3>
         <span className={`text-sm font-semibold ${over ? "text-berry" : "text-cocoa"}`}>
@@ -95,7 +63,33 @@ export function PersonCard({ person }: { person: PersonSummary }) {
         ))}
       </div>
 
-      {allWrapped && <p className="text-xs font-semibold text-pine">All wrapped!</p>}
+      {allWrapped && (
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-pine">
+          <svg aria-hidden="true" viewBox="0 0 32 24" className="h-4 w-5 shrink-0">
+            <path
+              d="M16 12 C13 4 4 3 4 9 C4 14 11 14.5 16 12 Z"
+              fill="var(--berry)"
+              stroke="var(--berry-deep)"
+              strokeWidth="1"
+            />
+            <path
+              d="M16 12 C19 4 28 3 28 9 C28 14 21 14.5 16 12 Z"
+              fill="var(--berry)"
+              stroke="var(--berry-deep)"
+              strokeWidth="1"
+            />
+            <path
+              d="M15 13 C13 17 12 19 10 21 M17 13 C19 17 20 19 22 21"
+              stroke="var(--pine)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <circle cx="16" cy="12" r="3" fill="var(--berry-deep)" />
+          </svg>
+          All wrapped!
+        </p>
+      )}
     </div>
   );
 }

@@ -97,7 +97,7 @@ export default async function PurchasesPage({
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 bg-cream px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-1">
-        <h1 className="flex items-center gap-2 font-display text-3xl text-pine-deep">
+        <h1 className="flex items-center gap-2 font-festive text-4xl text-pine-deep">
           <Gift className="h-7 w-7 text-berry" aria-hidden />
           Purchases — {season.year}
         </h1>

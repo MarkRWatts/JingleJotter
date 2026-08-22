@@ -1,6 +1,6 @@
 // Shared nav destinations for the desktop top bar and mobile bottom tabs.
 
-import { Home, Gift, Users, CalendarRange, type LucideIcon } from "lucide-react";
+import { Home, Gift, Users, CalendarRange, Luggage, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href: string;
@@ -14,6 +14,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", tabLabel: "Home", icon: Home },
   { href: "/purchases", label: "Purchases", tabLabel: "Purchases", icon: Gift },
   { href: "/people", label: "People", tabLabel: "People", icon: Users },
+  { href: "/trip", label: "City Break", tabLabel: "Trip", icon: Luggage },
   { href: "/seasons", label: "Seasons", tabLabel: "Seasons", icon: CalendarRange },
 ];
 
