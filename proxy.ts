@@ -19,9 +19,12 @@ export function proxy(request: NextRequest) {
     const signInUrl = new URL("/signin", request.url);
     return NextResponse.redirect(signInUrl);
   }
-  if (pathname === "/signin" && authenticated) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // NOTE: no cookie-based redirect AWAY from /signin here. A stale or
+  // foreign session cookie (e.g. another app's localhost dev cookie —
+  // cookies aren't port-scoped) would pass the optimistic check but fail
+  // the real auth() in the page, bouncing /signin → / → /signin forever.
+  // The signed-in-already redirect lives in app/signin/page.tsx, where
+  // auth() validates the session against the database.
   return NextResponse.next();
 }
 

@@ -1,11 +1,19 @@
 import Image from "next/image";
-import { signIn } from "@/auth";
+import { redirect } from "next/navigation";
+import { auth, signIn } from "@/auth";
 
 export default async function SignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  // Real (database-validated) session check — a genuinely signed-in user
+  // skips the sign-in page. Deliberately NOT done in proxy.ts: its
+  // cookie-presence check can't tell a stale/foreign cookie from a live
+  // session and would redirect-loop.
+  const session = await auth();
+  if (session?.user) redirect("/");
+
   const { error } = await searchParams;
 
   return (
