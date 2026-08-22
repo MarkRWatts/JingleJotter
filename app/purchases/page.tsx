@@ -30,12 +30,12 @@ export default async function PurchasesPage({
 
   if (!season) {
     return (
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-3 bg-cream px-6 py-16 text-center">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-3 bg-cream px-6 py-16 text-center">
         <h1 className="font-display text-2xl text-pine-deep">No season yet</h1>
         <p className="text-cocoa-soft">
           Set up a Christmas season before tracking purchases.
         </p>
-      </main>
+      </div>
     );
   }
 
@@ -95,7 +95,7 @@ export default async function PurchasesPage({
   const peopleOptions = people.map((p) => ({ id: p.id, name: p.name }));
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 bg-cream px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 bg-cream px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-1">
         <h1 className="flex items-center gap-2 font-display text-3xl text-pine-deep">
           <Gift className="h-7 w-7 text-berry" aria-hidden />
@@ -126,6 +126,6 @@ export default async function PurchasesPage({
       </div>
 
       <PurchaseList purchases={purchases} categories={categoryOptions} people={peopleOptions} />
-    </main>
+    </div>
   );
 }

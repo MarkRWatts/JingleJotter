@@ -25,7 +25,7 @@ export default async function PeoplePage({
   const season = await resolveSeason(year);
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6">
       {!season ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl bg-white p-10 text-center shadow-sm">
           <PiggyBank size={32} className="text-pine" />
@@ -43,7 +43,7 @@ export default async function PeoplePage({
       ) : (
         <PeopleAndBudgets seasonId={season.id} year={season.year} currentUserId={session.user.id} />
       )}
-    </main>
+    </div>
   );
 }
 

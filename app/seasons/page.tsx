@@ -42,7 +42,7 @@ export default async function SeasonsPage() {
   const suggestedYear = (seasons[0]?.year ?? new Date().getFullYear() - 1) + 1;
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <CalendarRange size={22} className="text-berry" />
@@ -85,7 +85,7 @@ export default async function SeasonsPage() {
           </div>
         </>
       )}
-    </main>
+    </div>
   );
 }
 
