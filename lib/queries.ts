@@ -126,6 +126,29 @@ export function getSeasonTotals(categories: CategorySummary[]): SeasonTotals {
   return { totalSpentPence, totalBudgetPence, totalPlannedPence };
 }
 
+export type SeasonPersonRef = { id: string; name: string };
+
+/**
+ * People who are members of a season: they have a PersonBudget row for it,
+ * or at least one purchase logged in it. Person identity itself is global
+ * (see schema.prisma — masking/linking and cross-year identity depend on
+ * that), but which season someone counts as "in" is scoped, and this is
+ * the shared helper for that scoping. Reused by the purchases page (picker
+ * options) and the people page ("this season" vs "not in this season").
+ */
+export async function getSeasonPeople(seasonId: string): Promise<SeasonPersonRef[]> {
+  return prisma.person.findMany({
+    where: {
+      OR: [
+        { personBudgets: { some: { seasonId } } },
+        { purchases: { some: { seasonId } } },
+      ],
+    },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
+}
+
 /** All seasons' years, newest first — powers the dashboard's year switcher. */
 export async function getSeasonYears(): Promise<number[]> {
   const seasons = await prisma.season.findMany({

@@ -39,23 +39,22 @@ export async function createPerson(
 
   if (seasonId) await assertSeasonWritable(seasonId);
 
-  let allocatedPence: number | null = null;
+  let allocatedPence = 0;
   if (allocationRaw) {
-    allocatedPence = parseToPence(allocationRaw);
-    if (allocatedPence === null) {
+    const parsed = parseToPence(allocationRaw);
+    if (parsed === null) {
       return { error: "That allocation doesn't look like a money amount." };
     }
+    allocatedPence = parsed;
   }
 
   await prisma.person.create({
     data: {
       name,
-      ...(seasonId && allocatedPence !== null
-        ? {
-            personBudgets: {
-              create: { seasonId, allocatedPence },
-            },
-          }
+      // Always create the membership row for the creating season (even at
+      // £0) so a new person immediately counts as "in" this season.
+      ...(seasonId
+        ? { personBudgets: { create: { seasonId, allocatedPence } } }
         : {}),
     },
   });
@@ -123,9 +122,59 @@ export async function linkPersonToUser(
   return null;
 }
 
-/** Delete a Person. Purchases keep their history (personId is set null); their
- *  PersonBudgets go with them (cascade). */
-export async function deletePerson(
+/** Add an existing (already-global) Person to a season as a member, with a
+ *  starting allocation of £0 for the season lead to fill in afterwards. */
+export async function addPersonToSeason(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireUser();
+
+  const personId = String(formData.get("personId") ?? "");
+  const seasonId = String(formData.get("seasonId") ?? "");
+  if (!personId || !seasonId) return { error: "Missing person or season." };
+  await assertSeasonWritable(seasonId);
+
+  await prisma.personBudget.upsert({
+    where: { personId_seasonId: { personId, seasonId } },
+    create: { personId, seasonId, allocatedPence: 0 },
+    update: {},
+  });
+
+  revalidateAll();
+  return null;
+}
+
+/** Remove a Person from just this season — deletes only their PersonBudget
+ *  row for it. The Person and their standing in every other season are
+ *  untouched. Refuses when they have purchases logged this season, since
+ *  those would otherwise be silently orphaned from the person picker. */
+export async function removePersonFromSeason(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireUser();
+
+  const personId = String(formData.get("personId") ?? "");
+  const seasonId = String(formData.get("seasonId") ?? "");
+  if (!personId || !seasonId) return { error: "Missing person or season." };
+  await assertSeasonWritable(seasonId);
+
+  const purchaseCount = await prisma.purchase.count({ where: { personId, seasonId } });
+  if (purchaseCount > 0) {
+    return { error: "They have purchases this season — reassign or delete those first." };
+  }
+
+  await prisma.personBudget.deleteMany({ where: { personId, seasonId } });
+
+  revalidateAll();
+  return null;
+}
+
+/** Permanently delete a Person. Only ever allowed when they have no history
+ *  anywhere — no purchases and no PersonBudget in any season — since Person
+ *  identity is global and this can't be scoped to "just this season". */
+export async function deletePersonForever(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
@@ -133,6 +182,14 @@ export async function deletePerson(
 
   const personId = String(formData.get("personId") ?? "");
   if (!personId) return { error: "Missing person." };
+
+  const [purchaseCount, budgetCount] = await Promise.all([
+    prisma.purchase.count({ where: { personId } }),
+    prisma.personBudget.count({ where: { personId } }),
+  ]);
+  if (purchaseCount > 0 || budgetCount > 0) {
+    return { error: "They have history in another season — can't delete forever." };
+  }
 
   await prisma.person.delete({ where: { id: personId } });
 

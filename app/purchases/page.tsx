@@ -3,6 +3,7 @@ import { Gift } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
+import { getSeasonPeople } from "@/lib/queries";
 import { maskPurchase } from "@/lib/mask";
 import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { isActualSpend, PURCHASE_STATUSES, type PurchaseStatus } from "@/lib/domain";
@@ -48,7 +49,7 @@ export default async function PurchasesPage({
       where: { seasonId: season.id },
       orderBy: { sortOrder: "asc" },
     }),
-    prisma.person.findMany({ orderBy: { name: "asc" } }),
+    getSeasonPeople(season.id),
   ]);
 
   const categoryFilter = category && categories.some((c) => c.id === category) ? category : undefined;

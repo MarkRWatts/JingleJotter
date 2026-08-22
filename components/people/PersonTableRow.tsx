@@ -2,7 +2,7 @@ import { Link2 } from "lucide-react";
 import { formatPence } from "@/lib/money";
 import { PersonAllocationForm } from "./PersonAllocationForm";
 import { LinkUserSelect, type LinkableUser } from "./LinkUserSelect";
-import { DeletePersonButton } from "./DeletePersonButton";
+import { RemoveFromSeasonButton } from "./RemoveFromSeasonButton";
 import { BudgetBar } from "./BudgetBar";
 import type { PersonRowData } from "./types";
 
@@ -10,11 +10,13 @@ import type { PersonRowData } from "./types";
 export function PersonTableRow({
   person,
   seasonId,
+  year,
   users,
   readOnly = false,
 }: {
   person: PersonRowData;
   seasonId: string;
+  year: number;
   users: LinkableUser[];
   readOnly?: boolean;
 }) {
@@ -74,7 +76,12 @@ export function PersonTableRow({
       </td>
       <td className="w-10 py-3">
         {!readOnly && (
-          <DeletePersonButton personId={person.id} personName={person.name} />
+          <RemoveFromSeasonButton
+            personId={person.id}
+            personName={person.name}
+            seasonId={seasonId}
+            year={year}
+          />
         )}
       </td>
     </tr>

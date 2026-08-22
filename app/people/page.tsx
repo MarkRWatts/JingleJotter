@@ -4,11 +4,13 @@ import { Users, PiggyBank, CalendarRange } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
+import { getSeasonPeople } from "@/lib/queries";
 import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { AddPersonForm } from "@/components/people/AddPersonForm";
 import { PersonCard } from "@/components/people/PersonCard";
 import { PersonTableRow } from "@/components/people/PersonTableRow";
-import type { PersonRowData } from "@/components/people/types";
+import { NotInSeasonSection } from "@/components/people/NotInSeasonSection";
+import type { PersonRowData, OtherPersonRowData } from "@/components/people/types";
 import type { LinkableUser } from "@/components/people/LinkUserSelect";
 import { AddCategoryForm } from "@/components/people/AddCategoryForm";
 import { CategoryCard, type CategoryRowData } from "@/components/people/CategoryCard";
@@ -64,38 +66,52 @@ async function PeopleAndBudgets({
   currentUserId: string;
   readOnly: boolean;
 }) {
-  const [people, spendGroups, users, categories, purchaseCounts] = await Promise.all([
-    prisma.person.findMany({
-      orderBy: { name: "asc" },
-      include: {
-        linkedUser: { select: { id: true, email: true } },
-        personBudgets: { where: { seasonId } },
-      },
-    }),
-    prisma.purchase.groupBy({
-      by: ["personId"],
-      where: { seasonId, personId: { not: null }, status: { not: "IDEA" } },
-      _sum: { pricePence: true },
-    }),
-    prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        person: { select: { name: true } },
-      },
-      orderBy: { email: "asc" },
-    }),
-    prisma.category.findMany({
-      where: { seasonId },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.purchase.groupBy({
-      by: ["categoryId"],
-      where: { seasonId },
-      _count: { _all: true },
-    }),
-  ]);
+  const [seasonPeopleRefs, allPeople, spendGroups, users, categories, purchaseCounts, budgetsEverywhere, purchasesEverywhere] =
+    await Promise.all([
+      getSeasonPeople(seasonId),
+      prisma.person.findMany({
+        orderBy: { name: "asc" },
+        include: {
+          linkedUser: { select: { id: true, email: true } },
+          personBudgets: { where: { seasonId } },
+        },
+      }),
+      prisma.purchase.groupBy({
+        by: ["personId"],
+        where: { seasonId, personId: { not: null }, status: { not: "IDEA" } },
+        _sum: { pricePence: true },
+      }),
+      prisma.user.findMany({
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          person: { select: { name: true } },
+        },
+        orderBy: { email: "asc" },
+      }),
+      prisma.category.findMany({
+        where: { seasonId },
+        orderBy: { sortOrder: "asc" },
+      }),
+      prisma.purchase.groupBy({
+        by: ["categoryId"],
+        where: { seasonId },
+        _count: { _all: true },
+      }),
+      // History across every season (not just this one) — cheap on this
+      // dataset's scale — powers the "not in this season" enrichment below.
+      prisma.personBudget.findMany({
+        select: { personId: true, season: { select: { year: true } } },
+      }),
+      prisma.purchase.findMany({
+        where: { personId: { not: null } },
+        select: { personId: true, season: { select: { year: true } } },
+        distinct: ["personId", "seasonId"],
+      }),
+    ]);
+
+  const seasonPeopleIds = new Set(seasonPeopleRefs.map((p) => p.id));
 
   const spendByPerson = new Map(
     spendGroups.map((g) => [g.personId as string, g._sum.pricePence ?? 0]),
@@ -104,6 +120,26 @@ async function PeopleAndBudgets({
     purchaseCounts.map((g) => [g.categoryId, g._count._all]),
   );
 
+  // Per-person history spanning every season: how many PersonBudget rows
+  // they have anywhere, how many purchases anywhere, and the most recent
+  // season year either shows up in.
+  const budgetCountByPerson = new Map<string, number>();
+  const purchaseCountByPersonEver = new Map<string, number>();
+  const lastYearByPerson = new Map<string, number>();
+  const noteYear = (personId: string, year: number) => {
+    const prev = lastYearByPerson.get(personId) ?? 0;
+    if (year > prev) lastYearByPerson.set(personId, year);
+  };
+  for (const b of budgetsEverywhere) {
+    budgetCountByPerson.set(b.personId, (budgetCountByPerson.get(b.personId) ?? 0) + 1);
+    noteYear(b.personId, b.season.year);
+  }
+  for (const p of purchasesEverywhere) {
+    if (!p.personId) continue;
+    purchaseCountByPersonEver.set(p.personId, (purchaseCountByPersonEver.get(p.personId) ?? 0) + 1);
+    noteYear(p.personId, p.season.year);
+  }
+
   const linkableUsers: LinkableUser[] = users.map((u) => ({
     id: u.id,
     label:
@@ -111,7 +147,10 @@ async function PeopleAndBudgets({
       (u.person && u.person.name ? ` (linked to ${u.person.name})` : ""),
   }));
 
-  const personRows: PersonRowData[] = people.map((p) => {
+  const seasonPeople = allPeople.filter((p) => seasonPeopleIds.has(p.id));
+  const otherPeople = allPeople.filter((p) => !seasonPeopleIds.has(p.id));
+
+  const personRows: PersonRowData[] = seasonPeople.map((p) => {
     const isSurpriseForViewer = p.linkedUser?.id === currentUserId;
     return {
       id: p.id,
@@ -123,6 +162,16 @@ async function PeopleAndBudgets({
       isSurpriseForViewer,
     };
   });
+
+  const otherPersonRows: OtherPersonRowData[] = otherPeople.map((p) => ({
+    id: p.id,
+    name: p.name,
+    linkedUserEmail: p.linkedUser?.email ?? null,
+    lastYear: lastYearByPerson.get(p.id) ?? null,
+    canDeleteForever:
+      (purchaseCountByPersonEver.get(p.id) ?? 0) === 0 &&
+      (budgetCountByPerson.get(p.id) ?? 0) === 0,
+  }));
 
   const categoryRows: CategoryRowData[] = categories.map((c) => ({
     id: c.id,
@@ -163,6 +212,7 @@ async function PeopleAndBudgets({
                   key={p.id}
                   person={p}
                   seasonId={seasonId}
+                  year={year}
                   users={linkableUsers}
                   readOnly={readOnly}
                 />
@@ -185,6 +235,7 @@ async function PeopleAndBudgets({
                       key={p.id}
                       person={p}
                       seasonId={seasonId}
+                      year={year}
                       users={linkableUsers}
                       readOnly={readOnly}
                     />
@@ -193,6 +244,10 @@ async function PeopleAndBudgets({
               </table>
             </div>
           </>
+        )}
+
+        {!readOnly && otherPersonRows.length > 0 && (
+          <NotInSeasonSection people={otherPersonRows} seasonId={seasonId} year={year} />
         )}
       </section>
 
