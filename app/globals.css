@@ -37,6 +37,13 @@ body {
   font-family: var(--font-nunito), ui-rounded, system-ui, sans-serif;
 }
 
+/* Safari gives native selects the fixed system-control height, leaving
+   pickers shorter than text boxes. Pin every text-ish control to one
+   height (zero-specificity :where so component classes can override). */
+:where(select, input:not([type="checkbox"]):not([type="radio"])) {
+  height: 2.5rem;
+}
+
 /* Mountains of Christmas (page titles only) is a light hand-drawn face —
    always use its bold cut. */
 .font-festive {
