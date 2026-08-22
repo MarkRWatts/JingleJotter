@@ -32,7 +32,9 @@ export function TopNav({
 }) {
   return (
     <header className="sticky top-0 z-30 border-b border-cocoa/10 bg-cream/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 md:px-6">
+      {/* Row 1: brand + season + user controls. Page links get their own
+          row below (desktop only — mobile nav lives in the bottom tabs). */}
+      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 pt-3 pb-3 md:px-6 md:pb-1.5">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <Image
             src="/brand/icon.png"
@@ -45,8 +47,7 @@ export function TopNav({
           <span className="font-display text-lg text-pine-deep">Jingle Jotter</span>
         </Link>
 
-        <div className="flex flex-1 items-center gap-3">
-          <NavLinks />
+        <div className="flex flex-1 items-center justify-end gap-3">
           <SeasonSwitcher seasons={seasons} currentYear={currentYear} />
         </div>
 
@@ -85,6 +86,11 @@ export function TopNav({
             <SignOutButton compact />
           </div>
         </div>
+      </div>
+
+      {/* Row 2: page links, full width to breathe. */}
+      <div className="mx-auto hidden max-w-5xl items-center px-4 pb-2 md:flex md:px-6">
+        <NavLinks />
       </div>
     </header>
   );
