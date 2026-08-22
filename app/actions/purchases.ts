@@ -8,6 +8,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
+import { assertSeasonWritable } from "@/lib/season";
 import { parseToPence } from "@/lib/money";
 import {
   PURCHASE_STATUSES,
@@ -123,6 +124,7 @@ export async function createPurchase(formData: FormData): Promise<ActionResult> 
   if (!seasonId) return { ok: false, error: "Missing season." };
   const season = await prisma.season.findUnique({ where: { id: seasonId } });
   if (!season) return { ok: false, error: "That season wasn't found." };
+  await assertSeasonWritable(seasonId);
 
   const parsed = await parseAndValidate(formData, seasonId, "IDEA");
   if (!parsed.ok) return parsed;
@@ -142,6 +144,7 @@ export async function updatePurchase(
 ): Promise<ActionResult> {
   const userId = await requireUserId();
   const existing = await loadMutablePurchase(purchaseId, userId);
+  await assertSeasonWritable(existing.seasonId);
 
   const parsed = await parseAndValidate(
     formData,
@@ -162,7 +165,8 @@ export async function updatePurchase(
 
 export async function deletePurchase(purchaseId: string): Promise<ActionResult> {
   const userId = await requireUserId();
-  await loadMutablePurchase(purchaseId, userId);
+  const existing = await loadMutablePurchase(purchaseId, userId);
+  await assertSeasonWritable(existing.seasonId);
 
   await prisma.purchase.delete({ where: { id: purchaseId } });
 
@@ -174,6 +178,7 @@ export async function deletePurchase(purchaseId: string): Promise<ActionResult> 
 export async function advanceStatus(purchaseId: string): Promise<ActionResult> {
   const userId = await requireUserId();
   const existing = await loadMutablePurchase(purchaseId, userId);
+  await assertSeasonWritable(existing.seasonId);
 
   if (!isPurchaseStatus(existing.status)) {
     return { ok: false, error: "Unknown status." };

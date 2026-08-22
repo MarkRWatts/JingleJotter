@@ -1,6 +1,7 @@
 import { CategoryBudgetForm } from "./CategoryBudgetForm";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 import { categoryKindLabel } from "./categoryKindLabel";
+import { formatPence } from "@/lib/money";
 
 export type CategoryRowData = {
   id: string;
@@ -11,7 +12,13 @@ export type CategoryRowData = {
 };
 
 /** Mobile-first stacked card for one category — shown below md. */
-export function CategoryCard({ category }: { category: CategoryRowData }) {
+export function CategoryCard({
+  category,
+  readOnly = false,
+}: {
+  category: CategoryRowData;
+  readOnly?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-1">
@@ -21,12 +28,20 @@ export function CategoryCard({ category }: { category: CategoryRowData }) {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <CategoryBudgetForm categoryId={category.id} budgetPence={category.budgetPence} />
-        <DeleteCategoryButton
-          categoryId={category.id}
-          categoryName={category.name}
-          purchaseCount={category.purchaseCount}
-        />
+        {readOnly ? (
+          <span className="text-sm font-semibold text-cocoa">
+            {formatPence(category.budgetPence)}
+          </span>
+        ) : (
+          <>
+            <CategoryBudgetForm categoryId={category.id} budgetPence={category.budgetPence} />
+            <DeleteCategoryButton
+              categoryId={category.id}
+              categoryName={category.name}
+              purchaseCount={category.purchaseCount}
+            />
+          </>
+        )}
       </div>
     </div>
   );

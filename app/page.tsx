@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
 import { maskPurchase } from "@/lib/mask";
 import {
@@ -14,7 +13,7 @@ import { PersonCard } from "@/components/dashboard/person-card";
 import { RecentPurchases, type MaskedRecentPurchase } from "@/components/dashboard/recent-purchases";
 import { SeasonTotalsStrip } from "@/components/dashboard/season-totals-strip";
 import { CountdownChip } from "@/components/dashboard/countdown-chip";
-import { YearSwitcher } from "@/components/dashboard/year-switcher";
+import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { FairyLights } from "@/components/dashboard/fairy-lights";
 import { HeaderSparkles } from "@/components/dashboard/header-sparkles";
@@ -36,18 +35,16 @@ export default async function DashboardPage({
     return <EmptyState />;
   }
 
-  const [categories, people, recentRaw, allYears] = await Promise.all([
+  const [categories, people, recentRaw] = await Promise.all([
     getCategorySummaries(season.id),
     getPersonSummaries(season.id, userId),
     getRecentPurchases(season.id),
-    prisma.season.findMany({ orderBy: { year: "desc" }, select: { year: true } }),
   ]);
 
   const totals = getSeasonTotals(categories);
   const recentPurchases: MaskedRecentPurchase[] = recentRaw.map((purchase) =>
     maskPurchase(purchase, userId),
   );
-  const years = allYears.map((s) => s.year);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-6 md:px-6 md:py-8">
@@ -60,8 +57,9 @@ export default async function DashboardPage({
           </span>
           <CountdownChip year={season.year} />
         </div>
-        <YearSwitcher years={years} activeYear={season.year} />
       </div>
+
+      {!season.active && <ArchivedNotice year={season.year} />}
 
       {/* The run-up: Sep–Dec mini calendars, collapsed by default */}
       <RunUpCalendar year={season.year} />

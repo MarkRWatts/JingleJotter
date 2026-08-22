@@ -17,14 +17,16 @@ export default function PurchaseCard({
   purchase,
   categories,
   people,
+  readOnly = false,
 }: {
   purchase: PurchaseListItem;
   categories: SelectOption[];
   people: SelectOption[];
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
-  if (editing) {
+  if (editing && !readOnly) {
     return (
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <PurchaseEditForm
@@ -77,7 +79,7 @@ export default function PurchaseCard({
           <span className="text-xs italic text-cocoa-soft">Shh — surprise</span>
         )}
       </div>
-      {!purchase.isMasked && (
+      {!purchase.isMasked && !readOnly && (
         <div className="mt-3">
           <PurchaseActions
             id={purchase.id}

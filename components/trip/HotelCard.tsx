@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ItemEditForm } from "./ItemEditForm";
 import { ItemActions } from "./ItemActions";
+import { BookedChip } from "./BookedChip";
 import { formatStayLine } from "./format";
 import type { DayOption, TripItemData } from "./types";
 
@@ -14,6 +15,7 @@ export function HotelCard({
   tripStartDate,
   tripEndDate,
   days,
+  readOnly = false,
 }: {
   item: TripItemData;
   /** "YYYY-MM-DD" */
@@ -21,10 +23,11 @@ export function HotelCard({
   /** "YYYY-MM-DD" */
   tripEndDate: string;
   days: DayOption[];
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
-  if (editing) {
+  if (editing && !readOnly) {
     return (
       <ItemEditForm
         item={item}
@@ -51,12 +54,16 @@ export function HotelCard({
         {item.notes && <p className="text-sm text-cocoa-soft">{item.notes}</p>}
       </div>
 
-      <ItemActions
-        itemId={item.id}
-        itemTitle={item.title}
-        booked={item.booked}
-        onEdit={() => setEditing(true)}
-      />
+      {readOnly ? (
+        <BookedChip booked={item.booked} />
+      ) : (
+        <ItemActions
+          itemId={item.id}
+          itemTitle={item.title}
+          booked={item.booked}
+          onEdit={() => setEditing(true)}
+        />
+      )}
     </div>
   );
 }

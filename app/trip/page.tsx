@@ -4,6 +4,7 @@ import { Luggage, MapPin } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
+import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { isActualSpend } from "@/lib/domain";
 import {
   tripDays,
@@ -84,11 +85,21 @@ export default async function TripPage({
   }
 
   const trip = await prisma.trip.findUnique({ where: { seasonId: season.id } });
+  const readOnly = !season.active;
 
   if (!trip) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6">
-        <TripSetupForm seasonId={season.id} year={season.year} />
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-8 sm:px-6">
+        {readOnly ? (
+          <>
+            <ArchivedNotice year={season.year} />
+            <p className="rounded-3xl bg-white p-6 text-center text-sm text-cocoa-soft shadow-sm">
+              No city break was planned for this archived season.
+            </p>
+          </>
+        ) : (
+          <TripSetupForm seasonId={season.id} year={season.year} />
+        )}
       </div>
     );
   }
@@ -185,12 +196,15 @@ export default async function TripPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+      {readOnly && <ArchivedNotice year={season.year} />}
+
       <TripHeader
         seasonId={season.id}
         destination={trip.destination}
         startDate={dateKey(trip.startDate)}
         endDate={dateKey(trip.endDate)}
         budget={budget}
+        readOnly={readOnly}
       />
 
       <section className="flex flex-col gap-3">
@@ -212,6 +226,7 @@ export default async function TripPage({
         tripStartDate={dateKey(trip.startDate)}
         tripEndDate={dateKey(trip.endDate)}
         days={dayOptions}
+        readOnly={readOnly}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -225,6 +240,7 @@ export default async function TripPage({
               mealSlots={g.mealSlots}
               extraMeals={g.extraMeals}
               days={dayOptions}
+              readOnly={readOnly}
             />
           ))}
 
@@ -233,24 +249,26 @@ export default async function TripPage({
               <h3 className="font-display text-lg text-pine-deep">Unscheduled</h3>
               <div className="flex flex-col gap-2">
                 {unscheduledItems.map((item) => (
-                  <ItemRow key={item.id} item={item} days={dayOptions} />
+                  <ItemRow key={item.id} item={item} days={dayOptions} readOnly={readOnly} />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:h-fit">
-          <AddItemForm
-            key={`${defaultType ?? ""}-${defaultDate ?? ""}-${defaultSlot ?? ""}`}
-            tripId={trip.id}
-            days={dayOptions}
-            defaultType={defaultType}
-            defaultDate={defaultDate}
-            defaultSlot={defaultSlot}
-          />
-          {showTraditionCard && <TraditionCard tripId={trip.id} />}
-        </div>
+        {!readOnly && (
+          <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:h-fit">
+            <AddItemForm
+              key={`${defaultType ?? ""}-${defaultDate ?? ""}-${defaultSlot ?? ""}`}
+              tripId={trip.id}
+              days={dayOptions}
+              defaultType={defaultType}
+              defaultDate={defaultDate}
+              defaultSlot={defaultSlot}
+            />
+            {showTraditionCard && <TraditionCard tripId={trip.id} />}
+          </div>
+        )}
       </div>
     </div>
   );

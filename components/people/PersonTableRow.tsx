@@ -11,10 +11,12 @@ export function PersonTableRow({
   person,
   seasonId,
   users,
+  readOnly = false,
 }: {
   person: PersonRowData;
   seasonId: string;
   users: LinkableUser[];
+  readOnly?: boolean;
 }) {
   return (
     <tr className="border-b border-cocoa/10 align-top last:border-0">
@@ -30,11 +32,17 @@ export function PersonTableRow({
         </div>
       </td>
       <td className="py-3 pr-4">
-        <PersonAllocationForm
-          personId={person.id}
-          seasonId={seasonId}
-          allocatedPence={person.allocatedPence}
-        />
+        {readOnly ? (
+          <span className="text-sm font-semibold text-cocoa">
+            {formatPence(person.allocatedPence)}
+          </span>
+        ) : (
+          <PersonAllocationForm
+            personId={person.id}
+            seasonId={seasonId}
+            allocatedPence={person.allocatedPence}
+          />
+        )}
       </td>
       <td className="w-40 py-3 pr-4">
         <div className="flex flex-col gap-1.5">
@@ -52,14 +60,22 @@ export function PersonTableRow({
         </div>
       </td>
       <td className="w-64 py-3 pr-4">
-        <LinkUserSelect
-          personId={person.id}
-          currentUserId={person.linkedUserId}
-          users={users}
-        />
+        {readOnly ? (
+          <span className="text-sm text-cocoa-soft">
+            {person.linkedUserEmail ? `Linked to ${person.linkedUserEmail}` : "Not linked"}
+          </span>
+        ) : (
+          <LinkUserSelect
+            personId={person.id}
+            currentUserId={person.linkedUserId}
+            users={users}
+          />
+        )}
       </td>
       <td className="w-10 py-3">
-        <DeletePersonButton personId={person.id} personName={person.name} />
+        {!readOnly && (
+          <DeletePersonButton personId={person.id} personName={person.name} />
+        )}
       </td>
     </tr>
   );

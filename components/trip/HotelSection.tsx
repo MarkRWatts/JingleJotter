@@ -11,6 +11,7 @@ export function HotelSection({
   tripStartDate,
   tripEndDate,
   days,
+  readOnly = false,
 }: {
   hotels: TripItemData[];
   /** "YYYY-MM-DD" */
@@ -18,6 +19,7 @@ export function HotelSection({
   /** "YYYY-MM-DD" */
   tripEndDate: string;
   days: DayOption[];
+  readOnly?: boolean;
 }) {
   return (
     <section className="flex flex-col gap-3">
@@ -34,9 +36,14 @@ export function HotelSection({
               tripStartDate={tripStartDate}
               tripEndDate={tripEndDate}
               days={days}
+              readOnly={readOnly}
             />
           ))}
         </div>
+      ) : readOnly ? (
+        <p className="rounded-3xl bg-white px-5 py-4 text-sm text-cocoa-soft shadow-sm">
+          Nowhere was booked.
+        </p>
       ) : (
         <Link
           href="/trip?add=HOTEL#add-item-form"

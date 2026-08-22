@@ -8,10 +8,12 @@ export default function PurchaseList({
   purchases,
   categories,
   people,
+  readOnly = false,
 }: {
   purchases: PurchaseListItem[];
   categories: SelectOption[];
   people: SelectOption[];
+  readOnly?: boolean;
 }) {
   if (purchases.length === 0) {
     return (
@@ -41,14 +43,26 @@ export default function PurchaseList({
           </thead>
           <tbody>
             {purchases.map((p) => (
-              <PurchaseRow key={p.id} purchase={p} categories={categories} people={people} />
+              <PurchaseRow
+                key={p.id}
+                purchase={p}
+                categories={categories}
+                people={people}
+                readOnly={readOnly}
+              />
             ))}
           </tbody>
         </table>
       </div>
       <div className="flex flex-col gap-3 md:hidden">
         {purchases.map((p) => (
-          <PurchaseCard key={p.id} purchase={p} categories={categories} people={people} />
+          <PurchaseCard
+            key={p.id}
+            purchase={p}
+            categories={categories}
+            people={people}
+            readOnly={readOnly}
+          />
         ))}
       </div>
     </>

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
 import { maskPurchase } from "@/lib/mask";
+import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { isActualSpend, PURCHASE_STATUSES, type PurchaseStatus } from "@/lib/domain";
 import { formatPence } from "@/lib/money";
 import QuickAddForm from "@/components/purchases/QuickAddForm";
@@ -93,6 +94,7 @@ export default async function PurchasesPage({
 
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
   const peopleOptions = people.map((p) => ({ id: p.id, name: p.name }));
+  const readOnly = !season.active;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 bg-cream px-4 py-8 sm:px-6">
@@ -106,7 +108,11 @@ export default async function PurchasesPage({
         </p>
       </header>
 
-      <QuickAddForm seasonId={season.id} categories={categoryOptions} people={peopleOptions} />
+      {readOnly && <ArchivedNotice year={season.year} />}
+
+      {!readOnly && (
+        <QuickAddForm seasonId={season.id} categories={categoryOptions} people={peopleOptions} />
+      )}
 
       <FilterBar
         categories={categoryOptions}
@@ -125,7 +131,12 @@ export default async function PurchasesPage({
         </div>
       </div>
 
-      <PurchaseList purchases={purchases} categories={categoryOptions} people={peopleOptions} />
+      <PurchaseList
+        purchases={purchases}
+        categories={categoryOptions}
+        people={peopleOptions}
+        readOnly={readOnly}
+      />
     </div>
   );
 }

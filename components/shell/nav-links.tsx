@@ -4,20 +4,22 @@
 // small client boundary — everything else in the shell can stay server-only.
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
 
 export function NavLinks() {
   const pathname = usePathname();
+  const year = useSearchParams().get("year");
 
   return (
     <nav className="hidden items-center gap-1 md:flex">
       {NAV_ITEMS.map((item) => {
         const active = isNavItemActive(pathname, item.href);
+        const href = year ? `${item.href}?year=${year}` : item.href;
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             aria-current={active ? "page" : undefined}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               active

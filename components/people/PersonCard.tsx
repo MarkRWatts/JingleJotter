@@ -11,10 +11,12 @@ export function PersonCard({
   person,
   seasonId,
   users,
+  readOnly = false,
 }: {
   person: PersonRowData;
   seasonId: string;
   users: LinkableUser[];
+  readOnly?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
@@ -28,7 +30,9 @@ export function PersonCard({
             </span>
           )}
         </div>
-        <DeletePersonButton personId={person.id} personName={person.name} />
+        {!readOnly && (
+          <DeletePersonButton personId={person.id} personName={person.name} />
+        )}
       </div>
 
       <div className="flex items-center justify-between text-sm">
@@ -48,19 +52,31 @@ export function PersonCard({
 
       <div className="flex items-center justify-between gap-2 border-t border-cocoa/10 pt-3">
         <span className="text-sm text-cocoa-soft">Allocation</span>
-        <PersonAllocationForm
-          personId={person.id}
-          seasonId={seasonId}
-          allocatedPence={person.allocatedPence}
-        />
+        {readOnly ? (
+          <span className="text-sm font-semibold text-cocoa">
+            {formatPence(person.allocatedPence)}
+          </span>
+        ) : (
+          <PersonAllocationForm
+            personId={person.id}
+            seasonId={seasonId}
+            allocatedPence={person.allocatedPence}
+          />
+        )}
       </div>
 
       <div className="border-t border-cocoa/10 pt-3">
-        <LinkUserSelect
-          personId={person.id}
-          currentUserId={person.linkedUserId}
-          users={users}
-        />
+        {readOnly ? (
+          <span className="text-sm text-cocoa-soft">
+            {person.linkedUserEmail ? `Linked to ${person.linkedUserEmail}` : "Not linked"}
+          </span>
+        ) : (
+          <LinkUserSelect
+            personId={person.id}
+            currentUserId={person.linkedUserId}
+            users={users}
+          />
+        )}
       </div>
     </div>
   );

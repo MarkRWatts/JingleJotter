@@ -15,6 +15,7 @@ export function TripHeader({
   startDate,
   endDate,
   budget,
+  readOnly = false,
 }: {
   seasonId: string;
   destination: string;
@@ -23,6 +24,7 @@ export function TripHeader({
   /** "YYYY-MM-DD" */
   endDate: string;
   budget: { categoryId: string; spentPence: number; budgetPence: number } | null;
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(upsertTrip, null);
@@ -55,17 +57,19 @@ export function TripHeader({
             {formatDateRangeLabel(new Date(startDate), new Date(endDate))}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          aria-label={editing ? "Cancel editing trip" : "Edit trip"}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pine text-pine transition hover:bg-pine/10"
-        >
-          {editing ? <X size={16} /> : <Pencil size={16} />}
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            aria-label={editing ? "Cancel editing trip" : "Edit trip"}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pine text-pine transition hover:bg-pine/10"
+          >
+            {editing ? <X size={16} /> : <Pencil size={16} />}
+          </button>
+        )}
       </div>
 
-      {editing && (
+      {editing && !readOnly && (
         <form action={formAction} className="flex flex-col gap-3 rounded-2xl bg-cream/60 p-4">
           <input type="hidden" name="seasonId" value={seasonId} />
           <label className="flex flex-col gap-1 text-sm text-cocoa-soft">

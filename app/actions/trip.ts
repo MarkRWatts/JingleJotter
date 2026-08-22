@@ -12,6 +12,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertSeasonWritable } from "@/lib/season";
 import { geocodeVenue } from "@/lib/geocode";
 import {
   TRIP_ITEM_TYPES,
@@ -75,6 +76,7 @@ export async function upsertTrip(
   if (!seasonId) return { error: "Missing season." };
   const season = await prisma.season.findUnique({ where: { id: seasonId } });
   if (!season) return { error: "That season wasn't found." };
+  await assertSeasonWritable(seasonId);
 
   const destination = readField(formData, "destination") || "London";
   const startDate = parseDateOnly(readField(formData, "startDate"));
@@ -201,6 +203,7 @@ export async function createTripItem(
   if (!tripId) return { error: "Missing trip." };
   const trip = await prisma.trip.findUnique({ where: { id: tripId } });
   if (!trip) return { error: "That trip wasn't found." };
+  await assertSeasonWritable(trip.seasonId);
 
   const parsed = parseItemFields(formData, trip);
   if (!parsed.ok) return { error: parsed.error };
@@ -226,6 +229,7 @@ export async function updateTripItem(
   if (!existing) return { error: "That item no longer exists." };
   const trip = await prisma.trip.findUnique({ where: { id: existing.tripId } });
   if (!trip) return { error: "That trip no longer exists." };
+  await assertSeasonWritable(trip.seasonId);
 
   const parsed = parseItemFields(formData, trip);
   if (!parsed.ok) return { error: parsed.error };
@@ -252,6 +256,13 @@ export async function deleteTripItem(
   const itemId = readField(formData, "itemId");
   if (!itemId) return { error: "Missing item." };
 
+  const existing = await prisma.tripItem.findUnique({
+    where: { id: itemId },
+    include: { trip: true },
+  });
+  if (!existing) return { error: "That item no longer exists." };
+  await assertSeasonWritable(existing.trip.seasonId);
+
   await prisma.tripItem.delete({ where: { id: itemId } });
 
   revalidateAll();
@@ -267,8 +278,12 @@ export async function toggleBooked(
 
   const itemId = readField(formData, "itemId");
   if (!itemId) return { error: "Missing item." };
-  const existing = await prisma.tripItem.findUnique({ where: { id: itemId } });
+  const existing = await prisma.tripItem.findUnique({
+    where: { id: itemId },
+    include: { trip: true },
+  });
   if (!existing) return { error: "That item no longer exists." };
+  await assertSeasonWritable(existing.trip.seasonId);
 
   await prisma.tripItem.update({
     where: { id: itemId },
@@ -292,6 +307,7 @@ export async function addTraditionItem(
   if (!tripId) return { error: "Missing trip." };
   const trip = await prisma.trip.findUnique({ where: { id: tripId } });
   if (!trip) return { error: "That trip wasn't found." };
+  await assertSeasonWritable(trip.seasonId);
 
   const venue = "Truefitt & Hill, St James's";
   const { lat, lng } = await resolveVenueCoordinates(venue, trip.destination);

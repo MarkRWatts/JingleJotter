@@ -19,14 +19,16 @@ export default function PurchaseRow({
   purchase,
   categories,
   people,
+  readOnly = false,
 }: {
   purchase: PurchaseListItem;
   categories: SelectOption[];
   people: SelectOption[];
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
-  if (editing) {
+  if (editing && !readOnly) {
     return (
       <tr className="border-b border-cocoa-soft/10 last:border-b-0">
         <td colSpan={COLUMN_COUNT} className="bg-cream/40 px-4 py-4">
@@ -68,11 +70,13 @@ export default function PurchaseRow({
         {purchase.isMasked ? (
           <span className="text-xs italic text-cocoa-soft">Shh — surprise</span>
         ) : (
-          <PurchaseActions
-            id={purchase.id}
-            status={purchase.status}
-            onEdit={() => setEditing(true)}
-          />
+          !readOnly && (
+            <PurchaseActions
+              id={purchase.id}
+              status={purchase.status}
+              onEdit={() => setEditing(true)}
+            />
+          )
         )}
       </td>
     </tr>

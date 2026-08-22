@@ -4,6 +4,7 @@ import { Users, PiggyBank, CalendarRange } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { resolveSeason } from "@/lib/season";
+import { ArchivedNotice } from "@/components/shell/archived-notice";
 import { AddPersonForm } from "@/components/people/AddPersonForm";
 import { PersonCard } from "@/components/people/PersonCard";
 import { PersonTableRow } from "@/components/people/PersonTableRow";
@@ -41,7 +42,12 @@ export default async function PeoplePage({
           </Link>
         </div>
       ) : (
-        <PeopleAndBudgets seasonId={season.id} year={season.year} currentUserId={session.user.id} />
+        <PeopleAndBudgets
+          seasonId={season.id}
+          year={season.year}
+          currentUserId={session.user.id}
+          readOnly={!season.active}
+        />
       )}
     </div>
   );
@@ -51,10 +57,12 @@ async function PeopleAndBudgets({
   seasonId,
   year,
   currentUserId,
+  readOnly,
 }: {
   seasonId: string;
   year: number;
   currentUserId: string;
+  readOnly: boolean;
 }) {
   const [people, spendGroups, users, categories, purchaseCounts] = await Promise.all([
     prisma.person.findMany({
@@ -139,9 +147,11 @@ async function PeopleAndBudgets({
         </p>
       </header>
 
+      {readOnly && <ArchivedNotice year={year} />}
+
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-xl text-pine-deep">People</h2>
-        <AddPersonForm seasonId={seasonId} />
+        {!readOnly && <AddPersonForm seasonId={seasonId} />}
 
         {personRows.length === 0 ? (
           <EmptyState label="No one on the list yet — add your first person above." />
@@ -149,7 +159,13 @@ async function PeopleAndBudgets({
           <>
             <div className="flex flex-col gap-3 md:hidden">
               {personRows.map((p) => (
-                <PersonCard key={p.id} person={p} seasonId={seasonId} users={linkableUsers} />
+                <PersonCard
+                  key={p.id}
+                  person={p}
+                  seasonId={seasonId}
+                  users={linkableUsers}
+                  readOnly={readOnly}
+                />
               ))}
             </div>
             <div className="hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-sm md:block">
@@ -170,6 +186,7 @@ async function PeopleAndBudgets({
                       person={p}
                       seasonId={seasonId}
                       users={linkableUsers}
+                      readOnly={readOnly}
                     />
                   ))}
                 </tbody>
@@ -181,7 +198,7 @@ async function PeopleAndBudgets({
 
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-xl text-pine-deep">Category budgets</h2>
-        <AddCategoryForm seasonId={seasonId} />
+        {!readOnly && <AddCategoryForm seasonId={seasonId} />}
 
         {categoryRows.length === 0 ? (
           <EmptyState label="No categories yet — add one above." />
@@ -189,7 +206,7 @@ async function PeopleAndBudgets({
           <>
             <div className="flex flex-col gap-3 md:hidden">
               {categoryRows.map((c) => (
-                <CategoryCard key={c.id} category={c} />
+                <CategoryCard key={c.id} category={c} readOnly={readOnly} />
               ))}
             </div>
             <div className="hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-sm md:block">
@@ -204,7 +221,7 @@ async function PeopleAndBudgets({
                 </thead>
                 <tbody>
                   {categoryRows.map((c) => (
-                    <CategoryTableRow key={c.id} category={c} />
+                    <CategoryTableRow key={c.id} category={c} readOnly={readOnly} />
                   ))}
                 </tbody>
               </table>

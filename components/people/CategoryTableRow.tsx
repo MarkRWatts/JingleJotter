@@ -1,10 +1,17 @@
 import { CategoryBudgetForm } from "./CategoryBudgetForm";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 import { categoryKindLabel } from "./categoryKindLabel";
+import { formatPence } from "@/lib/money";
 import type { CategoryRowData } from "./CategoryCard";
 
 /** Desktop table row for one category — shown at md and up. */
-export function CategoryTableRow({ category }: { category: CategoryRowData }) {
+export function CategoryTableRow({
+  category,
+  readOnly = false,
+}: {
+  category: CategoryRowData;
+  readOnly?: boolean;
+}) {
   return (
     <tr className="border-b border-cocoa/10 align-top last:border-0">
       <td className="py-3 pr-4">
@@ -16,14 +23,22 @@ export function CategoryTableRow({ category }: { category: CategoryRowData }) {
         </span>
       </td>
       <td className="w-40 py-3 pr-4">
-        <CategoryBudgetForm categoryId={category.id} budgetPence={category.budgetPence} />
+        {readOnly ? (
+          <span className="text-sm font-semibold text-cocoa">
+            {formatPence(category.budgetPence)}
+          </span>
+        ) : (
+          <CategoryBudgetForm categoryId={category.id} budgetPence={category.budgetPence} />
+        )}
       </td>
       <td className="w-10 py-3">
-        <DeleteCategoryButton
-          categoryId={category.id}
-          categoryName={category.name}
-          purchaseCount={category.purchaseCount}
-        />
+        {!readOnly && (
+          <DeleteCategoryButton
+            categoryId={category.id}
+            categoryName={category.name}
+            purchaseCount={category.purchaseCount}
+          />
+        )}
       </td>
     </tr>
   );

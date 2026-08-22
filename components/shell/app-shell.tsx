@@ -8,6 +8,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { resolveSeason } from "@/lib/season";
 import { TopNav } from "./top-nav";
 import { BottomTabs } from "./bottom-tabs";
 import { Rooftops } from "@/components/dashboard/rooftops";
@@ -19,6 +20,19 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  // Layouts don't see the page's own ?year=, so the shell only supplies the
+  // full season list plus the resolved "current" year (active season, or
+  // the newest one if none is active) — SeasonSwitcher reconciles that
+  // against the URL client-side.
+  const [seasons, currentSeason] = await Promise.all([
+    prisma.season.findMany({
+      orderBy: { year: "desc" },
+      select: { id: true, year: true, active: true },
+    }),
+    resolveSeason(),
+  ]);
+  const currentYear = currentSeason?.year ?? seasons[0]?.year ?? new Date().getFullYear();
+
   return (
     <>
       <TopNav
@@ -29,6 +43,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             select: { showWhimsy: true },
           }))?.showWhimsy ?? true
         }
+        seasons={seasons}
+        currentYear={currentYear}
       />
       <main className="flex-1 pb-24 md:pb-0">
         {children}

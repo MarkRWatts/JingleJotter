@@ -8,6 +8,7 @@ import { Sparkles } from "lucide-react";
 import { toggleWhimsy } from "@/app/actions/prefs";
 import { NavLinks } from "./nav-links";
 import { SignOutButton } from "./sign-out-button";
+import { SeasonSwitcher, type SeasonSwitcherOption } from "./season-switcher";
 
 type ShellUser = {
   name?: string | null;
@@ -18,10 +19,20 @@ function initial(user: ShellUser): string {
   return (user.name ?? user.email ?? "?").trim().charAt(0).toUpperCase() || "?";
 }
 
-export function TopNav({ user, showWhimsy }: { user: ShellUser; showWhimsy: boolean }) {
+export function TopNav({
+  user,
+  showWhimsy,
+  seasons,
+  currentYear,
+}: {
+  user: ShellUser;
+  showWhimsy: boolean;
+  seasons: SeasonSwitcherOption[];
+  currentYear: number;
+}) {
   return (
     <header className="sticky top-0 z-30 border-b border-cocoa/10 bg-cream/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 md:px-6">
+      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <Image
             src="/brand/icon.png"
@@ -34,7 +45,10 @@ export function TopNav({ user, showWhimsy }: { user: ShellUser; showWhimsy: bool
           <span className="font-display text-lg text-pine-deep">Jingle Jotter</span>
         </Link>
 
-        <NavLinks />
+        <div className="flex flex-1 items-center gap-3">
+          <NavLinks />
+          <SeasonSwitcher seasons={seasons} currentYear={currentYear} />
+        </div>
 
         <div className="flex items-center gap-2 md:gap-3">
           <form action={toggleWhimsy}>

@@ -4,12 +4,21 @@ import { useState } from "react";
 import { ITEM_TYPE_ICONS, MEAL_SLOT_ICONS } from "./icons";
 import { ItemEditForm } from "./ItemEditForm";
 import { ItemActions } from "./ItemActions";
+import { BookedChip } from "./BookedChip";
 import type { DayOption, TripItemData } from "./types";
 
-export function ItemRow({ item, days }: { item: TripItemData; days: DayOption[] }) {
+export function ItemRow({
+  item,
+  days,
+  readOnly = false,
+}: {
+  item: TripItemData;
+  days: DayOption[];
+  readOnly?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
 
-  if (editing) {
+  if (editing && !readOnly) {
     return (
       <ItemEditForm
         item={item}
@@ -46,12 +55,16 @@ export function ItemRow({ item, days }: { item: TripItemData; days: DayOption[] 
         </div>
       </div>
 
-      <ItemActions
-        itemId={item.id}
-        itemTitle={item.title}
-        booked={item.booked}
-        onEdit={() => setEditing(true)}
-      />
+      {readOnly ? (
+        <BookedChip booked={item.booked} />
+      ) : (
+        <ItemActions
+          itemId={item.id}
+          itemTitle={item.title}
+          booked={item.booked}
+          onEdit={() => setEditing(true)}
+        />
+      )}
     </div>
   );
 }

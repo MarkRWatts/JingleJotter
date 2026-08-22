@@ -11,6 +11,7 @@ export function DayCard({
   mealSlots,
   extraMeals,
   days,
+  readOnly = false,
 }: {
   day: Date;
   roleNote: string | null;
@@ -18,6 +19,7 @@ export function DayCard({
   mealSlots: { slot: MealSlot; item: TripItemData | null }[];
   extraMeals: TripItemData[];
   days: DayOption[];
+  readOnly?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm">
@@ -33,21 +35,19 @@ export function DayCard({
       {nonMealItems.length > 0 && (
         <div className="flex flex-col gap-2">
           {nonMealItems.map((item) => (
-            <ItemRow key={item.id} item={item} days={days} />
+            <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />
           ))}
         </div>
       )}
 
       <div className="flex flex-col gap-2">
-        {mealSlots.map(({ slot, item }) =>
-          item ? (
-            <ItemRow key={item.id} item={item} days={days} />
-          ) : (
-            <MealPlaceholder key={slot} date={day} slot={slot} />
-          ),
-        )}
+        {mealSlots.map(({ slot, item }) => {
+          if (item) return <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />;
+          if (readOnly) return null;
+          return <MealPlaceholder key={slot} date={day} slot={slot} />;
+        })}
         {extraMeals.map((item) => (
-          <ItemRow key={item.id} item={item} days={days} />
+          <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />
         ))}
       </div>
 

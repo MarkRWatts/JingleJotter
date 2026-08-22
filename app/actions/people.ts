@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertSeasonWritable } from "@/lib/season";
 import { parseToPence } from "@/lib/money";
 import { CATEGORY_KINDS, type CategoryKind } from "@/lib/domain";
 
@@ -35,6 +36,8 @@ export async function createPerson(
 
   const seasonId = String(formData.get("seasonId") ?? "").trim();
   const allocationRaw = String(formData.get("allocation") ?? "").trim();
+
+  if (seasonId) await assertSeasonWritable(seasonId);
 
   let allocatedPence: number | null = null;
   if (allocationRaw) {
@@ -72,6 +75,7 @@ export async function updatePersonAllocation(
   const seasonId = String(formData.get("seasonId") ?? "");
   const raw = String(formData.get("allocation") ?? "").trim();
   if (!personId || !seasonId) return { error: "Missing person or season." };
+  await assertSeasonWritable(seasonId);
 
   const pence = parseToPence(raw || "0");
   if (pence === null) {
@@ -147,6 +151,10 @@ export async function updateCategoryBudget(
   const raw = String(formData.get("budget") ?? "").trim();
   if (!categoryId) return { error: "Missing category." };
 
+  const category = await prisma.category.findUnique({ where: { id: categoryId } });
+  if (!category) return { error: "That category wasn't found." };
+  await assertSeasonWritable(category.seasonId);
+
   const pence = parseToPence(raw || "0");
   if (pence === null) {
     return { error: "That budget doesn't look like a money amount." };
@@ -175,6 +183,7 @@ export async function createCategory(
 
   if (!seasonId) return { error: "Missing season." };
   if (!name) return { error: "Give the category a name." };
+  await assertSeasonWritable(seasonId);
 
   const kind = CATEGORY_KINDS.includes(kindRaw as CategoryKind)
     ? (kindRaw as CategoryKind)
@@ -212,6 +221,10 @@ export async function deleteCategory(
 
   const categoryId = String(formData.get("categoryId") ?? "");
   if (!categoryId) return { error: "Missing category." };
+
+  const category = await prisma.category.findUnique({ where: { id: categoryId } });
+  if (!category) return { error: "That category wasn't found." };
+  await assertSeasonWritable(category.seasonId);
 
   const purchaseCount = await prisma.purchase.count({ where: { categoryId } });
   if (purchaseCount > 0) {
