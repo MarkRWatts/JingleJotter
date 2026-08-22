@@ -127,6 +127,50 @@ function Pine({ x, s = 1 }: { x: number; s?: number }) {
   );
 }
 
+function Snowman({ x }: { x: number }) {
+  const outline = "var(--cocoa-soft)";
+  return (
+    <g>
+      {/* stick arms */}
+      <path
+        d={`M ${x - 14} ${138} L ${x - 26} ${128} M ${x + 14} ${138} L ${x + 26} ${128}`}
+        stroke="var(--cocoa)"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+      {/* body + head */}
+      <circle cx={x} cy={148} r={17} fill={SNOW} stroke={outline} strokeOpacity={0.4} />
+      <circle cx={x} cy={124} r={12} fill={SNOW} stroke={outline} strokeOpacity={0.4} />
+      {/* hat */}
+      <rect x={x - 10} y={110} width={20} height={3.5} rx={1.75} fill="var(--cocoa)" />
+      <rect x={x - 6.5} y={100} width={13} height={11} rx={1.5} fill="var(--cocoa)" />
+      <rect x={x - 6.5} y={107} width={13} height={3} fill="var(--berry)" />
+      {/* face */}
+      <circle cx={x - 4} cy={121} r={1.6} fill="var(--cocoa)" />
+      <circle cx={x + 4} cy={121} r={1.6} fill="var(--cocoa)" />
+      <path d={`M ${x} ${124.5} L ${x + 9} ${126.5} L ${x} ${128} Z`} fill="var(--amber)" />
+      {/* scarf */}
+      <path
+        d={`M ${x - 10} ${134} Q ${x} ${140} ${x + 10} ${134}`}
+        stroke="var(--berry)"
+        strokeWidth={5}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d={`M ${x + 7} ${136} q 3 7 1 12`}
+        stroke="var(--berry)"
+        strokeWidth={4.5}
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* buttons */}
+      <circle cx={x} cy={144} r={1.7} fill="var(--cocoa)" />
+      <circle cx={x} cy={151} r={1.7} fill="var(--cocoa)" />
+    </g>
+  );
+}
+
 function Sparkle({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number; delay?: number }) {
   return (
     <path
@@ -175,6 +219,9 @@ export function Rooftops() {
           d="M 0 164 Q 80 155 170 160 T 360 158 T 560 162 T 760 156 T 950 161 T 1120 157 L 1200 159 L 1200 190 L 0 190 Z"
           fill={SNOW}
         />
+
+        {/* Snowman in the drift, foreground */}
+        <Snowman x={672} />
       </svg>
     </div>
   );

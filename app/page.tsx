@@ -19,7 +19,6 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { FairyLights } from "@/components/dashboard/fairy-lights";
 import { HeaderSparkles } from "@/components/dashboard/header-sparkles";
 import { RunUpCalendar } from "@/components/dashboard/run-up-calendar";
-import { Rooftops } from "@/components/dashboard/rooftops";
 
 export default async function DashboardPage({
   searchParams,
@@ -110,9 +109,6 @@ export default async function DashboardPage({
       <section>
         <SeasonTotalsStrip totals={totals} />
       </section>
-
-      {/* Snowy rooftops footer scene */}
-      <Rooftops />
     </div>
   );
 }
