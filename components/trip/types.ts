@@ -15,6 +15,8 @@ export type TripItemData = {
   venue: string | null;
   booked: boolean;
   notes: string | null;
+  /** Confirmation/booking reference — any item type, not just hotels. */
+  reference: string | null;
 };
 
 export type DayOption = {

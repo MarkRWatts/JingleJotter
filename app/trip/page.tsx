@@ -20,6 +20,7 @@ import { ItemRow } from "@/components/trip/ItemRow";
 import { AddItemForm } from "@/components/trip/AddItemForm";
 import { TraditionCard } from "@/components/trip/TraditionCard";
 import { TripMap } from "@/components/trip/TripMap";
+import { HotelSection } from "@/components/trip/HotelSection";
 import { dateKey, formatDayOptionLabel, dayRoleNote } from "@/components/trip/format";
 import type { DayOption, MapMarkerData, TripItemData } from "@/components/trip/types";
 
@@ -119,6 +120,7 @@ export default async function TripPage({
     venue: i.venue,
     booked: i.booked,
     notes: i.notes,
+    reference: i.reference,
   }));
 
   const days = tripDays(trip.startDate, trip.endDate);
@@ -127,8 +129,13 @@ export default async function TripPage({
     label: formatDayOptionLabel(d),
   }));
 
-  const unscheduledItems = items.filter(isUnscheduled).sort(compareItems);
-  const placedItems = items.filter((i) => !isUnscheduled(i));
+  // Hotels get their own section above the itinerary now — pull them out
+  // before the day-card/Unscheduled grouping below ever sees them.
+  const hotelItems = items.filter((i) => i.type === "HOTEL");
+  const nonHotelItems = items.filter((i) => i.type !== "HOTEL");
+
+  const unscheduledItems = nonHotelItems.filter(isUnscheduled).sort(compareItems);
+  const placedItems = nonHotelItems.filter((i) => !isUnscheduled(i));
 
   const dayGroups = days.map((day) => {
     const key = dateKey(day);
@@ -199,6 +206,13 @@ export default async function TripPage({
           </p>
         )}
       </section>
+
+      <HotelSection
+        hotels={hotelItems}
+        tripStartDate={dateKey(trip.startDate)}
+        tripEndDate={dateKey(trip.endDate)}
+        days={dayOptions}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">

@@ -117,6 +117,15 @@ export function ItemEditForm({
             className="rounded-xl border border-cocoa-soft/30 px-3 py-2 text-cocoa"
           />
         </label>
+        <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
+          Booking reference
+          <input
+            name="reference"
+            defaultValue={item.reference ?? ""}
+            placeholder="e.g. ABC123"
+            className="rounded-xl border border-cocoa-soft/30 px-3 py-2 font-mono text-cocoa"
+          />
+        </label>
         <label className="flex flex-col gap-1 text-sm text-cocoa-soft sm:col-span-2">
           Notes
           <input

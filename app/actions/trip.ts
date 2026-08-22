@@ -112,6 +112,7 @@ type ParsedItemFields = {
   venue: string | null;
   booked: boolean;
   notes: string | null;
+  reference: string | null;
 };
 
 type ParseResult =
@@ -159,8 +160,12 @@ function parseItemFields(
   const venue = readField(formData, "venue") || null;
   const booked = formData.get("booked") === "on" || formData.get("booked") === "true";
   const notes = readField(formData, "notes") || null;
+  const reference = readField(formData, "reference") || null;
 
-  return { ok: true, data: { type, title, date, mealSlot, time, venue, booked, notes } };
+  return {
+    ok: true,
+    data: { type, title, date, mealSlot, time, venue, booked, notes, reference },
+  };
 }
 
 /** Best-effort venue -> lat/lng, reusing a previous geocode when the venue

@@ -114,6 +114,14 @@ export function AddItemForm({
           </label>
         </div>
         <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
+          Booking reference
+          <input
+            name="reference"
+            placeholder="e.g. ABC123"
+            className="rounded-xl border border-cocoa-soft/30 px-3 py-2 font-mono text-cocoa"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
           Notes
           <input
             name="notes"

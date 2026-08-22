@@ -168,6 +168,8 @@ model TripItem {
   time      String?
   venue     String?
   booked    Boolean   @default(false)
+  // Confirmation/booking reference (hotel, train, restaurant — any type).
+  reference String?
   notes     String?
   // Geocoded from `venue` + trip destination via Nominatim (lib/geocode.ts);
   // null when the venue is empty or couldn't be resolved.

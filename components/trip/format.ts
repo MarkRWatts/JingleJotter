@@ -45,6 +45,17 @@ export function formatDateRangeLabel(start: Date, end: Date): string {
   return `${range} · ${nightsLabel}`;
 }
 
+/** "Check-in Fri 11 Dec · Check-out Sun 13 Dec · 2 nights" — the hotel
+ *  card's stay line, derived from the TRIP's own start/end (hotels span the
+ *  whole trip; the item's own `date` field isn't used for this). */
+export function formatStayLine(start: Date, end: Date): string {
+  const startLabel = `${WEEKDAY_SHORT.format(start)} ${DAY_NUM.format(start)} ${MONTH_SHORT.format(start)}`;
+  const endLabel = `${WEEKDAY_SHORT.format(end)} ${DAY_NUM.format(end)} ${MONTH_SHORT.format(end)}`;
+  const nights = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+  const nightsLabel = `${nights} night${nights === 1 ? "" : "s"}`;
+  return `Check-in ${startLabel} · Check-out ${endLabel} · ${nightsLabel}`;
+}
+
 /** "Saturday dinner" — used in the unbooked-meal placeholder row. */
 export function formatMealPlaceholderLabel(date: Date, slot: MealSlot): string {
   return `${WEEKDAY_LONG.format(date)} ${MEAL_SLOT_LABELS[slot].toLowerCase()}`;
