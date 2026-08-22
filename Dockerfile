@@ -33,6 +33,11 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+# lib/ (incl. the generated Prisma client) + tsconfig let `npx tsx
+# prisma/seed.ts` run inside the container — the Next server itself only
+# needs .next, but the seed script imports @/lib/db via tsconfig paths.
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 EXPOSE 3000
 
