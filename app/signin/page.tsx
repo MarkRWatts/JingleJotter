@@ -25,8 +25,8 @@ export default async function SignInPage({
         <Image
           src="/brand/login-mobile.png"
           alt=""
-          width={853}
-          height={1844}
+          width={833}
+          height={1282}
           className="w-full max-w-xs rounded-squircle shadow-sm md:hidden"
           priority
         />
