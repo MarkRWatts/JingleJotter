@@ -8,6 +8,7 @@ import {
   getRecentPurchases,
   getSeasonTotals,
 } from "@/lib/queries";
+import { getPreviousSeasonComparison } from "@/lib/yoy";
 import { CategoryCard } from "@/components/dashboard/category-card";
 import { PersonCard } from "@/components/dashboard/person-card";
 import { RecentPurchases, type MaskedRecentPurchase } from "@/components/dashboard/recent-purchases";
@@ -18,6 +19,7 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { FairyLights } from "@/components/dashboard/fairy-lights";
 import { HeaderSparkles } from "@/components/dashboard/header-sparkles";
 import { RunUpCalendar } from "@/components/dashboard/run-up-calendar";
+import InTransitCard from "@/components/dashboard/in-transit-card";
 
 export default async function DashboardPage({
   searchParams,
@@ -35,10 +37,11 @@ export default async function DashboardPage({
     return <EmptyState />;
   }
 
-  const [categories, people, recentRaw] = await Promise.all([
+  const [categories, people, recentRaw, previousSeason] = await Promise.all([
     getCategorySummaries(season.id),
     getPersonSummaries(season.id, userId),
     getRecentPurchases(season.id),
+    getPreviousSeasonComparison(season.year),
   ]);
 
   const totals = getSeasonTotals(categories);
@@ -74,11 +77,18 @@ export default async function DashboardPage({
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
+              <CategoryCard
+                key={category.id}
+                category={category}
+                lastYearSpentPence={previousSeason?.spentByKind[category.kind]}
+              />
             ))}
           </div>
         )}
       </section>
+
+      {/* Deliveries still on their way (renders nothing when none) */}
+      <InTransitCard seasonId={season.id} userId={userId} />
 
       {/* Per-person gift grid */}
       {people.length > 0 && (
@@ -88,7 +98,11 @@ export default async function DashboardPage({
             <h2 className="font-display text-xl text-pine-deep">Gifts by person</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {people.map((person) => (
-                <PersonCard key={person.id} person={person} />
+                <PersonCard
+                  key={person.id}
+                  person={person}
+                  lastYearSpendPence={previousSeason?.giftSpendByPersonId[person.id]}
+                />
               ))}
             </div>
           </section>
@@ -105,7 +119,7 @@ export default async function DashboardPage({
 
       {/* Season totals strip */}
       <section>
-        <SeasonTotalsStrip totals={totals} />
+        <SeasonTotalsStrip totals={totals} previousTotalSpentPence={previousSeason?.totalSpentPence} />
       </section>
     </div>
   );

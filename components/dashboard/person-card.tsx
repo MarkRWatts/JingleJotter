@@ -10,7 +10,14 @@ const CHIP_LABELS: Record<PurchaseStatus, string> = {
   WRAPPED: "wrapped",
 };
 
-export function PersonCard({ person }: { person: PersonSummary }) {
+export function PersonCard({
+  person,
+  lastYearSpendPence,
+}: {
+  person: PersonSummary;
+  /** This person's gift spend from the previous season; undefined/0 = nothing to show. */
+  lastYearSpendPence?: number;
+}) {
   const { name, allocatedPence, spentPence, statusCounts } = person;
   const hasBudget = allocatedPence > 0;
   const percent = hasBudget ? (spentPence / allocatedPence) * 100 : 0;
@@ -89,6 +96,10 @@ export function PersonCard({ person }: { person: PersonSummary }) {
           </svg>
           All wrapped!
         </p>
+      )}
+
+      {lastYearSpendPence !== undefined && lastYearSpendPence > 0 && (
+        <p className="text-xs text-cocoa-soft">last year {formatPence(lastYearSpendPence)}</p>
       )}
     </div>
   );

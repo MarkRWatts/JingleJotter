@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/signin"];
+const PUBLIC_PATHS = ["/signin", "/privacy"];
 // Auth.js names the database-session cookie differently depending on
 // whether secure cookies are in play (https / production).
 const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-token"];

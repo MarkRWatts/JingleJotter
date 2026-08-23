@@ -126,6 +126,15 @@ export default function PurchaseEditForm({
             className="rounded-xl border border-cocoa-soft/30 px-3 py-2 text-cocoa"
           />
         </label>
+        <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
+          Expected by
+          <input
+            type="date"
+            name="expectedBy"
+            defaultValue={toDateInputValue(purchase.expectedBy)}
+            className="rounded-xl border border-cocoa-soft/30 px-3 py-2 text-cocoa"
+          />
+        </label>
         <label className="flex flex-col gap-1 text-sm text-cocoa-soft sm:col-span-2 lg:col-span-3">
           Notes
           <input

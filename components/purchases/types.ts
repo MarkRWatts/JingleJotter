@@ -8,6 +8,8 @@ export type PurchaseListItem = {
   store: string | null;
   pricePence: number;
   purchasedOn: string | null;
+  // Only meaningful while status is PURCHASED — see schema.prisma.
+  expectedBy: string | null;
   createdAt: string;
   status: PurchaseStatus;
   notes: string | null;

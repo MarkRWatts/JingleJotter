@@ -24,13 +24,14 @@ export default async function PurchasesPage({
     status?: string;
     sort?: string;
     dir?: string;
+    q?: string;
   }>;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/signin");
 
-  const { year, category, person, status, sort, dir } = await searchParams;
+  const { year, category, person, status, sort, dir, q } = await searchParams;
   const season = await resolveSeason(year);
 
   if (!season) {
@@ -72,8 +73,7 @@ export default async function PurchasesPage({
   });
 
   const sorting = parseSort(sort, dir);
-  const purchases: PurchaseListItem[] = sortPurchases(
-    purchasesRaw.map((raw) => {
+  const maskedPurchases: PurchaseListItem[] = purchasesRaw.map((raw) => {
     const masked = maskPurchase(raw, userId);
     return {
       id: masked.id,
@@ -81,6 +81,7 @@ export default async function PurchasesPage({
       store: masked.store,
       pricePence: masked.pricePence,
       purchasedOn: masked.purchasedOn ? masked.purchasedOn.toISOString() : null,
+      expectedBy: masked.expectedBy ? masked.expectedBy.toISOString() : null,
       createdAt: masked.createdAt.toISOString(),
       status: masked.status as PurchaseStatus,
       notes: masked.notes,
@@ -90,10 +91,20 @@ export default async function PurchasesPage({
       personName: masked.person?.name ?? null,
       isMasked: masked.isMasked,
     };
-    }),
-    sorting.key,
-    sorting.dir,
-  );
+  });
+
+  // Search runs on the already-masked, visible fields only — a masked
+  // surprise row's hidden original title/store/notes must never match.
+  const searchTerm = q?.trim().toLowerCase();
+  const searched = searchTerm
+    ? maskedPurchases.filter((p) =>
+        [p.title, p.store, p.notes, p.categoryName, p.personName].some((field) =>
+          field?.toLowerCase().includes(searchTerm),
+        ),
+      )
+    : maskedPurchases;
+
+  const purchases: PurchaseListItem[] = sortPurchases(searched, sorting.key, sorting.dir);
 
   const actualSpendPence = purchases
     .filter((p) => isActualSpend(p.status))
@@ -127,7 +138,8 @@ export default async function PurchasesPage({
       <FilterBar
         categories={categoryOptions}
         people={peopleOptions}
-        selected={{ year, category: categoryFilter, person: personFilter, status: statusFilter }}
+        selected={{ year, category: categoryFilter, person: personFilter, status: statusFilter, q }}
+        resultCount={purchases.length}
       />
 
       <div className="flex flex-col gap-3 rounded-2xl bg-tag px-5 py-4 sm:flex-row sm:items-center sm:gap-8">

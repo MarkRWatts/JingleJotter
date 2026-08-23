@@ -36,6 +36,11 @@ export const STATUS_LABELS: Record<PurchaseStatus, string> = {
   WRAPPED: "Wrapped",
 };
 
+// Gift idea bank (GiftIdea.status) — the cross-year backlog, distinct from
+// the IDEA purchase status: an OPEN idea hasn't entered any season's list.
+export const IDEA_BANK_STATUSES = ["OPEN", "PROMOTED", "DISCARDED"] as const;
+export type IdeaBankStatus = (typeof IDEA_BANK_STATUSES)[number];
+
 /** Statuses that count toward actual spend (everything except ideas). */
 export function isActualSpend(status: string): boolean {
   return status !== "IDEA";

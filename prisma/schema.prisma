@@ -125,6 +125,28 @@ model Person {
 
   personBudgets PersonBudget[]
   purchases     Purchase[]
+  giftIdeas     GiftIdea[]
+}
+
+// A gift idea for a Person, independent of any Season — the cross-year
+// backlog ("spotted this in July"). Promoting an idea creates an
+// IDEA-status Purchase in the active season and links it here; if that
+// purchase is later deleted the link nulls out and the idea survives.
+model GiftIdea {
+  id          String    @id @default(cuid())
+  personId    String
+  person      Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+  title       String
+  notes       String?
+  url         String?
+  approxPence Int?
+  status      String    @default("OPEN") // OPEN | PROMOTED | DISCARDED — see lib/domain.ts
+  purchaseId  String?   @unique
+  purchase    Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([personId])
 }
 
 // How much of a Season's budget is earmarked for a given Person.
@@ -195,11 +217,16 @@ model Purchase {
   store       String?
   pricePence  Int
   purchasedOn DateTime?
+  // Expected delivery date — only meaningful while status is PURCHASED;
+  // powers the "still in transit" nudges.
+  expectedBy  DateTime?
   status      String    @default("IDEA") // IDEA | PURCHASED | ARRIVED | WRAPPED — see lib/domain.ts
   notes       String?
   url         String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  giftIdea GiftIdea?
 
   @@index([seasonId])
   @@index([categoryId])

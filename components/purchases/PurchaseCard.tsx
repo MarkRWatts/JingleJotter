@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Gift } from "lucide-react";
 import { formatPence } from "@/lib/money";
 import StatusChip from "./StatusChip";
+import DueChip from "./DueChip";
+import { isOverdue } from "./dueDate";
 import PurchaseActions from "./PurchaseActions";
 import PurchaseEditForm from "./PurchaseEditForm";
 import type { PurchaseListItem, SelectOption } from "./types";
@@ -73,8 +75,16 @@ export default function PurchaseCard({
           </span>
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <StatusChip status={purchase.status} />
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusChip status={purchase.status} />
+          {purchase.status === "PURCHASED" && purchase.expectedBy && (
+            <DueChip
+              expectedBy={purchase.expectedBy}
+              overdue={isOverdue(purchase.expectedBy, purchase.status)}
+            />
+          )}
+        </div>
         {purchase.isMasked && (
           <span className="text-xs italic text-cocoa-soft">Shh — surprise</span>
         )}

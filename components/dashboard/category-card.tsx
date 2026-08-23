@@ -2,7 +2,14 @@ import { formatPence } from "@/lib/money";
 import type { CategorySummary } from "@/lib/queries";
 import { ProgressBar } from "./progress-bar";
 
-export function CategoryCard({ category }: { category: CategorySummary }) {
+export function CategoryCard({
+  category,
+  lastYearSpentPence,
+}: {
+  category: CategorySummary;
+  /** Same-kind actual spend from the previous season; undefined = no predecessor/data. */
+  lastYearSpentPence?: number;
+}) {
   const { name, budgetPence, spentPence, plannedPence } = category;
   const hasBudget = budgetPence > 0;
   const percent = hasBudget ? (spentPence / budgetPence) * 100 : 0;
@@ -58,6 +65,10 @@ export function CategoryCard({ category }: { category: CategorySummary }) {
             </span>
           )}
         </p>
+      )}
+
+      {lastYearSpentPence !== undefined && (
+        <p className="text-xs text-cocoa-soft">last year: {formatPence(lastYearSpentPence)}</p>
       )}
     </div>
   );

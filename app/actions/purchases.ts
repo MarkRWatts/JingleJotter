@@ -59,6 +59,12 @@ function parsePurchasedOn(raw: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function parseExpectedBy(raw: string): Date | null {
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 type ParsedFields =
   | { ok: true; data: {
       title: string;
@@ -68,6 +74,7 @@ type ParsedFields =
       store: string | null;
       status: PurchaseStatus;
       purchasedOn: Date | null;
+      expectedBy: Date | null;
       notes: string | null;
     } }
   | { ok: false; error: string };
@@ -111,9 +118,14 @@ async function parseAndValidate(
   let purchasedOn = parsePurchasedOn(readField(formData, "purchasedOn"));
   if (status === "PURCHASED" && !purchasedOn) purchasedOn = new Date();
 
+  // An idea has no delivery yet — only a PURCHASED-or-later item can have an
+  // expected-by date.
+  const expectedBy =
+    status === "IDEA" ? null : parseExpectedBy(readField(formData, "expectedBy"));
+
   return {
     ok: true,
-    data: { title, pricePence, categoryId, personId, store, status, purchasedOn, notes },
+    data: { title, pricePence, categoryId, personId, store, status, purchasedOn, expectedBy, notes },
   };
 }
 

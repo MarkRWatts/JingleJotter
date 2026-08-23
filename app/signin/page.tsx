@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { SubmitButton } from "./submit-button";
@@ -64,6 +65,13 @@ export default async function SignInPage({
             Sign in with Google
           </SubmitButton>
         </form>
+
+        <Link
+          href="/privacy"
+          className="text-xs text-cocoa-soft underline-offset-2 hover:text-cocoa hover:underline"
+        >
+          Privacy
+        </Link>
       </div>
     </main>
   );
