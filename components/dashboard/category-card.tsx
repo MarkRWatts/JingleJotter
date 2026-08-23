@@ -9,6 +9,9 @@ export function CategoryCard({ category }: { category: CategorySummary }) {
   const over = hasBudget && spentPence > budgetPence;
   const remainingPence = budgetPence - spentPence;
   const totalWithPlannedPence = spentPence + plannedPence;
+  // What's left once ideas are counted too — the budget not yet assigned
+  // to any purchase, bought or merely planned.
+  const unassignedPence = budgetPence - totalWithPlannedPence;
 
   return (
     <div className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm">
@@ -41,9 +44,15 @@ export function CategoryCard({ category }: { category: CategorySummary }) {
       {plannedPence > 0 && (
         <p className="text-xs text-cocoa-soft">
           + {formatPence(plannedPence)} planned ·{" "}
-          {hasBudget
-            ? `${formatPence(totalWithPlannedPence)} of ${formatPence(budgetPence)} envisioned`
-            : `${formatPence(totalWithPlannedPence)} envisioned`}
+          {!hasBudget ? (
+            `${formatPence(totalWithPlannedPence)} envisioned`
+          ) : unassignedPence >= 0 ? (
+            `${formatPence(unassignedPence)} left to allocate`
+          ) : (
+            <span className="font-semibold text-berry">
+              {formatPence(-unassignedPence)} over if every idea lands
+            </span>
+          )}
         </p>
       )}
     </div>
