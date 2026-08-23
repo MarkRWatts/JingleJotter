@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Users, PiggyBank, CalendarRange } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { formatPence } from "@/lib/money";
 import { resolveSeason } from "@/lib/season";
 import { getSeasonPeople } from "@/lib/queries";
 import { ArchivedNotice } from "@/components/shell/archived-notice";
@@ -173,6 +174,15 @@ async function PeopleAndBudgets({
       (budgetCountByPerson.get(p.id) ?? 0) === 0,
   }));
 
+  // How much of the gift budget is still unallocated: the season's GIFTS
+  // category budget(s) minus every person's allocation. Allocations aren't
+  // surprise-masked, so this sum is safe to show either signed-in user.
+  const giftBudgetPence = categories
+    .filter((c) => c.kind === "GIFTS")
+    .reduce((sum, c) => sum + c.budgetPence, 0);
+  const allocatedPence = personRows.reduce((sum, p) => sum + p.allocatedPence, 0);
+  const unallocatedPence = giftBudgetPence - allocatedPence;
+
   const categoryRows: CategoryRowData[] = categories.map((c) => ({
     id: c.id,
     name: c.name,
@@ -199,7 +209,25 @@ async function PeopleAndBudgets({
       {readOnly && <ArchivedNotice year={year} />}
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-xl text-pine-deep">People</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="font-display text-xl text-pine-deep">People</h2>
+          {giftBudgetPence > 0 &&
+            (unallocatedPence >= 0 ? (
+              <p className="text-sm text-cocoa-soft">
+                <span className="font-semibold text-pine-deep">
+                  {formatPence(unallocatedPence)}
+                </span>{" "}
+                left to allocate
+              </p>
+            ) : (
+              <p className="text-sm text-cocoa-soft">
+                <span className="font-semibold text-berry-deep">
+                  {formatPence(-unallocatedPence)}
+                </span>{" "}
+                over the gift budget
+              </p>
+            ))}
+        </div>
         {!readOnly && <AddPersonForm seasonId={seasonId} />}
 
         {personRows.length === 0 ? (
