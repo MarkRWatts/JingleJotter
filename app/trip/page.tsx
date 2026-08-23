@@ -20,6 +20,7 @@ import { DayCard } from "@/components/trip/DayCard";
 import { ItemRow } from "@/components/trip/ItemRow";
 import { AddItemForm } from "@/components/trip/AddItemForm";
 import { TraditionCard } from "@/components/trip/TraditionCard";
+import { TRADITIONS } from "@/lib/traditions";
 import { TripMap } from "@/components/trip/TripMap";
 import { HotelSection } from "@/components/trip/HotelSection";
 import { dateKey, formatDayOptionLabel, dayRoleNote } from "@/components/trip/format";
@@ -169,10 +170,10 @@ export default async function TripPage({
   const defaultSlot = isMealSlot(slot) ? slot : undefined;
 
   const destinationIsLondon = trip.destination.toLowerCase().includes("london");
-  const hasTruefitt = items.some((i) =>
-    `${i.title} ${i.venue ?? ""}`.toLowerCase().includes("truefitt"),
-  );
-  const showTraditionCard = destinationIsLondon && !hasTruefitt;
+  const missingTraditions = TRADITIONS.filter(
+    (t) => !items.some((i) => `${i.title} ${i.venue ?? ""}`.toLowerCase().includes(t.match)),
+  ).map((t) => t.key);
+  const showTraditionCard = destinationIsLondon && missingTraditions.length > 0;
 
   const budget = cityBreakCategory
     ? { categoryId: cityBreakCategory.id, spentPence, budgetPence: cityBreakCategory.budgetPence }
@@ -266,7 +267,9 @@ export default async function TripPage({
               defaultDate={defaultDate}
               defaultSlot={defaultSlot}
             />
-            {showTraditionCard && <TraditionCard tripId={trip.id} />}
+            {showTraditionCard && (
+              <TraditionCard tripId={trip.id} missing={missingTraditions} />
+            )}
           </div>
         )}
       </div>

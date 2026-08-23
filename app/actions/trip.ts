@@ -14,6 +14,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { assertSeasonWritable } from "@/lib/season";
 import { geocodeVenue } from "@/lib/geocode";
+import { TRADITIONS } from "@/lib/traditions";
 import {
   TRIP_ITEM_TYPES,
   MEAL_SLOTS,
@@ -309,18 +310,23 @@ export async function addTraditionItem(
   if (!trip) return { error: "That trip wasn't found." };
   await assertSeasonWritable(trip.seasonId);
 
-  const venue = "Truefitt & Hill, St James's";
-  const { lat, lng } = await resolveVenueCoordinates(venue, trip.destination);
+  const key = readField(formData, "tradition");
+  const tradition = TRADITIONS.find((t) => t.key === key);
+  if (!tradition) return { error: "That tradition wasn't found." };
+
+  // Traditions carry a precise street address — geocode with that rather
+  // than the display venue name.
+  const point = await geocodeVenue(tradition.address, trip.destination);
 
   await prisma.tripItem.create({
     data: {
       tripId,
       type: "ACTIVITY",
-      title: "Haircut & shave",
-      venue,
+      title: tradition.title,
+      venue: tradition.venue,
       booked: false,
-      lat,
-      lng,
+      lat: point?.lat ?? null,
+      lng: point?.lng ?? null,
     },
   });
 
