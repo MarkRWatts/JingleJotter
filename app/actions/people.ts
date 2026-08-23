@@ -24,6 +24,29 @@ async function requireUser() {
   return session.user;
 }
 
+/** Rename a person. Global by design: a Person is one identity across every
+ *  season, so the new name shows on all years' data, archives included —
+ *  that's the point (fixing "Dad W" to "Dad Watts" everywhere at once). */
+export async function renamePerson(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireUser();
+
+  const personId = String(formData.get("personId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!personId) return { error: "Missing person." };
+  if (!name) return { error: "A name can't be empty." };
+  if (name.length > 80) return { error: "That name is a bit long." };
+
+  await prisma.person.update({ where: { id: personId }, data: { name } });
+
+  revalidatePath("/");
+  revalidatePath("/people");
+  revalidatePath("/purchases");
+  return null;
+}
+
 /** Create a new Person, optionally with a starting allocation for a season. */
 export async function createPerson(
   _prevState: ActionState,

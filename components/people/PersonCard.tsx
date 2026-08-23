@@ -1,5 +1,6 @@
 import { Link2 } from "lucide-react";
 import { formatPence } from "@/lib/money";
+import { PersonName } from "./PersonName";
 import { PersonAllocationForm } from "./PersonAllocationForm";
 import { LinkUserSelect, type LinkableUser } from "./LinkUserSelect";
 import { RemoveFromSeasonButton } from "./RemoveFromSeasonButton";
@@ -24,7 +25,7 @@ export function PersonCard({
     <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
-          <span className="font-display text-lg text-pine-deep">{person.name}</span>
+          <PersonName personId={person.id} name={person.name} readOnly={readOnly} />
           {person.linkedUserEmail && (
             <span className="inline-flex w-fit items-center gap-1 rounded-full bg-tag px-2.5 py-0.5 text-xs font-semibold text-pine-deep">
               <Link2 size={11} />
