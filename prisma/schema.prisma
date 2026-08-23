@@ -93,6 +93,7 @@ model Season {
   purchases     Purchase[]
   personBudgets PersonBudget[]
   trip          Trip?
+  cardStatuses  CardSeasonStatus[]
 }
 
 // A spending bucket within a Season (Gifts, Food, Festive Extras, City
@@ -126,6 +127,44 @@ model Person {
   personBudgets PersonBudget[]
   purchases     Purchase[]
   giftIdeas     GiftIdea[]
+  cardContact   CardContact?
+}
+
+// Someone the household sends a Christmas card to. Identity is global (like
+// Person); per-season sent/received state lives in CardSeasonStatus. The
+// postal address is PII: stored ONLY as an AES-256-GCM envelope produced by
+// lib/pii.ts (key in env, never in the DB or its backups), never geocoded,
+// and never placed in URLs or logs.
+model CardContact {
+  id         String  @id @default(cuid())
+  name       String
+  addressEnc String? // "v1:iv:tag:ciphertext" envelope — see lib/pii.ts
+  notes      String?
+  // Optional link to a Person so renames carry over; not used for masking
+  // (cards aren't surprises — both users manage the list together).
+  personId String? @unique
+  person   Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+  // Archived contacts keep their history but aren't offered in new seasons.
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  statuses CardSeasonStatus[]
+}
+
+// One contact's card state for one season: are we sending, has it gone,
+// has theirs arrived.
+model CardSeasonStatus {
+  id        String      @id @default(cuid())
+  contactId String
+  contact   CardContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  seasonId  String
+  season    Season      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  sendCard  Boolean     @default(true)
+  sent      Boolean     @default(false)
+  received  Boolean     @default(false)
+
+  @@unique([contactId, seasonId])
 }
 
 // A gift idea for a Person, independent of any Season — the cross-year
@@ -197,6 +236,10 @@ model TripItem {
   // null when the venue is empty or couldn't be resolved.
   lat       Float?
   lng       Float?
+  // Optional link to the CITY_BREAK Purchase that paid for this item —
+  // the plan pointing at the ledger, never a second ledger.
+  purchaseId String?   @unique
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -227,6 +270,7 @@ model Purchase {
   updatedAt   DateTime  @updatedAt
 
   giftIdea GiftIdea?
+  tripItem TripItem?
 
   @@index([seasonId])
   @@index([categoryId])

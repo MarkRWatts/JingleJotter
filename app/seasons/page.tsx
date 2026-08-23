@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarRange } from "lucide-react";
 import { auth } from "@/auth";
@@ -61,7 +63,15 @@ export default async function SeasonsPage() {
         <>
           <div className="flex flex-col gap-3 md:hidden">
             {seasonRows.map((s) => (
-              <SeasonCard key={s.id} season={s} />
+              <div key={s.id} className="flex flex-col gap-1">
+                <SeasonCard season={s} />
+                <Link
+                  href={`/summary?year=${s.year}`}
+                  className="self-end text-xs font-semibold text-pine hover:underline"
+                >
+                  Season summary &rarr;
+                </Link>
+              </div>
             ))}
           </div>
           <div className="hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-sm md:block">
@@ -78,7 +88,19 @@ export default async function SeasonsPage() {
               </thead>
               <tbody>
                 {seasonRows.map((s) => (
-                  <SeasonTableRow key={s.id} season={s} />
+                  <Fragment key={s.id}>
+                    <SeasonTableRow season={s} />
+                    <tr className="border-b border-cocoa/10 last:border-0">
+                      <td colSpan={6} className="pb-3 text-right">
+                        <Link
+                          href={`/summary?year=${s.year}`}
+                          className="text-xs font-semibold text-pine hover:underline"
+                        >
+                          Season summary &rarr;
+                        </Link>
+                      </td>
+                    </tr>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

@@ -5,16 +5,22 @@ import { ITEM_TYPE_ICONS, MEAL_SLOT_ICONS } from "./icons";
 import { ItemEditForm } from "./ItemEditForm";
 import { ItemActions } from "./ItemActions";
 import { BookedChip } from "./BookedChip";
-import type { DayOption, TripItemData } from "./types";
+import { PaidChip } from "./PaidChip";
+import { LogCostLink } from "./LogCostLink";
+import type { DayOption, LinkablePurchase, TripItemData } from "./types";
 
 export function ItemRow({
   item,
   days,
   readOnly = false,
+  linkablePurchases,
+  year,
 }: {
   item: TripItemData;
   days: DayOption[];
   readOnly?: boolean;
+  linkablePurchases: LinkablePurchase[];
+  year?: string;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -23,6 +29,7 @@ export function ItemRow({
       <ItemEditForm
         item={item}
         days={days}
+        linkablePurchases={linkablePurchases}
         onCancel={() => setEditing(false)}
         onSaved={() => setEditing(false)}
       />
@@ -55,16 +62,20 @@ export function ItemRow({
         </div>
       </div>
 
-      {readOnly ? (
-        <BookedChip booked={item.booked} />
-      ) : (
-        <ItemActions
-          itemId={item.id}
-          itemTitle={item.title}
-          booked={item.booked}
-          onEdit={() => setEditing(true)}
-        />
-      )}
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {item.linkedPurchase && <PaidChip pricePence={item.linkedPurchase.pricePence} />}
+        {!readOnly && item.booked && !item.linkedPurchase && <LogCostLink year={year} />}
+        {readOnly ? (
+          <BookedChip booked={item.booked} />
+        ) : (
+          <ItemActions
+            itemId={item.id}
+            itemTitle={item.title}
+            booked={item.booked}
+            onEdit={() => setEditing(true)}
+          />
+        )}
+      </div>
     </div>
   );
 }

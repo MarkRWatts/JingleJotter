@@ -171,6 +171,41 @@ function parseItemFields(
   };
 }
 
+type PurchaseLinkResult =
+  | { ok: true; purchaseId: string | null }
+  | { ok: false; error: string };
+
+/** Validates the "Paid via" select. Empty clears the link. Otherwise the
+ *  chosen Purchase must exist, belong to the trip's own season, sit in a
+ *  CITY_BREAK-kind category, and not already be linked to a *different*
+ *  TripItem (currentItemId is null on create, so nothing passes that check
+ *  yet — every already-linked purchase is off the table). */
+async function resolvePurchaseLink(
+  formData: FormData,
+  trip: { seasonId: string },
+  currentItemId: string | null,
+): Promise<PurchaseLinkResult> {
+  const raw = readField(formData, "purchaseId");
+  if (!raw) return { ok: true, purchaseId: null };
+
+  const purchase = await prisma.purchase.findUnique({
+    where: { id: raw },
+    include: { category: true, tripItem: true },
+  });
+  if (!purchase) return { ok: false, error: "That purchase wasn't found." };
+  if (purchase.seasonId !== trip.seasonId) {
+    return { ok: false, error: "That purchase isn't from this season." };
+  }
+  if (purchase.category.kind !== "CITY_BREAK") {
+    return { ok: false, error: "Only city-break purchases can be linked to a trip item." };
+  }
+  if (purchase.tripItem && purchase.tripItem.id !== currentItemId) {
+    return { ok: false, error: "That purchase is already linked to another item." };
+  }
+
+  return { ok: true, purchaseId: raw };
+}
+
 /** Best-effort venue -> lat/lng, reusing a previous geocode when the venue
  *  text hasn't changed (so editing e.g. just the time doesn't re-hit
  *  Nominatim). No venue means no coordinates; a failed/unmatched geocode
@@ -209,9 +244,14 @@ export async function createTripItem(
   const parsed = parseItemFields(formData, trip);
   if (!parsed.ok) return { error: parsed.error };
 
+  const purchaseLink = await resolvePurchaseLink(formData, trip, null);
+  if (!purchaseLink.ok) return { error: purchaseLink.error };
+
   const { lat, lng } = await resolveVenueCoordinates(parsed.data.venue, trip.destination);
 
-  await prisma.tripItem.create({ data: { tripId, ...parsed.data, lat, lng } });
+  await prisma.tripItem.create({
+    data: { tripId, ...parsed.data, purchaseId: purchaseLink.purchaseId, lat, lng },
+  });
 
   revalidateAll();
   return null;
@@ -235,13 +275,19 @@ export async function updateTripItem(
   const parsed = parseItemFields(formData, trip);
   if (!parsed.ok) return { error: parsed.error };
 
+  const purchaseLink = await resolvePurchaseLink(formData, trip, itemId);
+  if (!purchaseLink.ok) return { error: purchaseLink.error };
+
   const { lat, lng } = await resolveVenueCoordinates(parsed.data.venue, trip.destination, {
     venue: existing.venue,
     lat: existing.lat,
     lng: existing.lng,
   });
 
-  await prisma.tripItem.update({ where: { id: itemId }, data: { ...parsed.data, lat, lng } });
+  await prisma.tripItem.update({
+    where: { id: itemId },
+    data: { ...parsed.data, purchaseId: purchaseLink.purchaseId, lat, lng },
+  });
 
   revalidateAll();
   return null;

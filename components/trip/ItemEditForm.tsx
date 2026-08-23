@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { updateTripItem } from "@/app/actions/trip";
+import { formatPence } from "@/lib/money";
 import {
   TRIP_ITEM_TYPES,
   TRIP_ITEM_TYPE_LABELS,
@@ -9,19 +10,27 @@ import {
   MEAL_SLOT_LABELS,
   type TripItemType,
 } from "@/lib/trip";
-import type { DayOption, TripItemData } from "./types";
+import type { DayOption, LinkablePurchase, TripItemData } from "./types";
 
 export function ItemEditForm({
   item,
   days,
+  linkablePurchases,
   onCancel,
   onSaved,
 }: {
   item: TripItemData;
   days: DayOption[];
+  linkablePurchases: LinkablePurchase[];
   onCancel: () => void;
   onSaved: () => void;
 }) {
+  // Any purchase free to take, plus this item's own current link (if any) —
+  // so its option stays in the list and pre-selected even though it's
+  // "taken" by this very item.
+  const availablePurchases = linkablePurchases.filter(
+    (p) => p.takenByItemId === null || p.takenByItemId === item.id,
+  );
   const [type, setType] = useState<TripItemType>(item.type);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -125,6 +134,21 @@ export function ItemEditForm({
             placeholder="e.g. ABC123"
             className="rounded-xl border border-cocoa-soft/30 px-3 py-2 font-mono text-cocoa"
           />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
+          Paid via
+          <select
+            name="purchaseId"
+            defaultValue={item.linkedPurchase?.id ?? ""}
+            className="rounded-xl border border-cocoa-soft/30 px-3 py-2 text-cocoa"
+          >
+            <option value="">— not linked —</option>
+            {availablePurchases.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title} · {formatPence(p.pricePence)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="flex flex-col gap-1 text-sm text-cocoa-soft sm:col-span-2">
           Notes

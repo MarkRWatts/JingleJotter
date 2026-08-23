@@ -3,8 +3,9 @@
 import { useActionState, useRef, useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import { createTripItem } from "@/app/actions/trip";
+import { formatPence } from "@/lib/money";
 import { TRIP_ITEM_TYPES, TRIP_ITEM_TYPE_LABELS, MEAL_SLOTS, MEAL_SLOT_LABELS, type TripItemType } from "@/lib/trip";
-import type { DayOption } from "./types";
+import type { DayOption, LinkablePurchase } from "./types";
 
 export function AddItemForm({
   tripId,
@@ -12,16 +13,22 @@ export function AddItemForm({
   defaultType,
   defaultDate,
   defaultSlot,
+  linkablePurchases,
 }: {
   tripId: string;
   days: DayOption[];
   defaultType?: TripItemType;
   defaultDate?: string;
   defaultSlot?: string;
+  linkablePurchases: LinkablePurchase[];
 }) {
   const [state, formAction, pending] = useActionState(createTripItem, null);
   const [type, setType] = useState<TripItemType>(defaultType ?? "ACTIVITY");
   const formRef = useRef<HTMLFormElement>(null);
+  // A new item has no id of its own yet, so every already-linked purchase
+  // is genuinely off the table here (unlike ItemEditForm, which keeps the
+  // current item's own link selectable).
+  const availablePurchases = linkablePurchases.filter((p) => p.takenByItemId === null);
 
   return (
     <div id="add-item-form" className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm scroll-mt-20">
@@ -120,6 +127,21 @@ export function AddItemForm({
             placeholder="e.g. ABC123"
             className="rounded-xl border border-cocoa-soft/30 px-3 py-2 font-mono text-cocoa"
           />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
+          Paid via
+          <select
+            name="purchaseId"
+            defaultValue=""
+            className="rounded-xl border border-cocoa-soft/30 px-3 py-2 text-cocoa"
+          >
+            <option value="">— not linked —</option>
+            {availablePurchases.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title} · {formatPence(p.pricePence)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="flex flex-col gap-1 text-sm text-cocoa-soft">
           Notes

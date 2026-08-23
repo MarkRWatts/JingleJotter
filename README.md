@@ -35,6 +35,17 @@ rolls forward year after year so past Christmases become a browsable archive.
 - **The run-up calendar** — September to December at a glance, weekends tinted,
   Christmas days highlighted, days already gone snowed over with a "you are here"
   marker (plus sleeps-until-Christmas and shopping-weekends-left counters).
+- **Gift idea bank** — a cross-year backlog per person ("spotted this in July"),
+  promotable into the active season's list with one click. Ideas about *you*
+  stay invisible to your login, naturally.
+- **Delivery nudges** — expected-by dates on orders, due/overdue chips, and a
+  "still in transit" dashboard card so nothing's stuck in a depot on the 23rd.
+- **Christmas card list** — who gets a card, sent/received ticking, carried
+  forward season to season. Postal addresses are encrypted at rest
+  (AES-256-GCM, key outside the database — see Privacy below).
+- **Season summary & exports** — a printable year-in-numbers recap, plus CSV
+  exports of purchases and the card list. Year-over-year sublines on the
+  dashboard once you have a second season.
 - **Cosy by design** — hand-drawn snowy rooftops, fairy lights, and a festive
   display face… all behind a per-user whimsy switch for when you want it calm.
 - Fully responsive: desktop tables, mobile cards and bottom-tab navigation.
@@ -89,9 +100,32 @@ mode, add those same accounts as test users.
 | `ALLOWED_EMAILS` | Comma-separated allowlist of Google accounts |
 | `AUTH_URL` | The app's canonical external URL |
 | `DATABASE_URL` | SQLite path (defaulted in compose to the data volume) |
+| `PII_ENCRYPTION_KEY` | Address encryption — `openssl rand -base64 32` |
 
 Reverse-proxy TLS, backups (the database is one file — archive the volume), and
 DNS are yours to taste; any HTTPS-terminating proxy in front of port 3000 works.
+
+## Privacy & your data
+
+The in-app [privacy notice](app/privacy/page.tsx) (served at `/privacy`) is the
+summary of the app's data-handling posture. The short version:
+
+- **Minimal by design** — names, gift/budget details, and (only if you use the
+  card list) card recipients' names and postal addresses. Nothing else about
+  anyone.
+- **Addresses are encrypted at rest** — AES-256-GCM via `PII_ENCRYPTION_KEY`,
+  which lives only in your env file: the SQLite file and its backups alone can't
+  reveal an address. Losing the key loses stored addresses (only) — keep it
+  safe, keep it out of git.
+- **Nothing phones home** — no analytics, no third-party storage. The only
+  outbound calls are Google sign-in and OpenStreetMap lookups of trip *venue*
+  names; personal addresses are never geocoded and never appear in URLs or logs.
+- **Erasure & portability** — contacts and their addresses hard-delete in-app,
+  and each season's purchases and card list export as CSV.
+
+One household running this for itself sits under GDPR's household exemption;
+the above is good practice regardless, and a starting point if you host it for
+anyone beyond your own kitchen table.
 
 ## License
 

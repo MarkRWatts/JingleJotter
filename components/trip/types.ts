@@ -17,12 +17,25 @@ export type TripItemData = {
   notes: string | null;
   /** Confirmation/booking reference — any item type, not just hotels. */
   reference: string | null;
+  /** The CITY_BREAK Purchase paying for this item, if linked — just enough
+   *  to render the "paid" chip and pre-select the edit form's dropdown. */
+  linkedPurchase: { id: string; pricePence: number } | null;
 };
 
 export type DayOption = {
   /** "YYYY-MM-DD" — the value used in <select> options and query params. */
   key: string;
   label: string;
+};
+
+/** One CITY_BREAK-category Purchase, as offered by the "Paid via" selects in
+ *  AddItemForm/ItemEditForm — see app/trip/page.tsx. */
+export type LinkablePurchase = {
+  id: string;
+  title: string;
+  pricePence: number;
+  /** The TripItem id it's currently linked to, or null when free to take. */
+  takenByItemId: string | null;
 };
 
 /** A geocoded TripItem, ready to plot — see components/trip/TripMap.tsx. */

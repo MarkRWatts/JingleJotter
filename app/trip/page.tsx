@@ -24,7 +24,12 @@ import { TRADITIONS } from "@/lib/traditions";
 import { TripMap } from "@/components/trip/TripMap";
 import { HotelSection } from "@/components/trip/HotelSection";
 import { dateKey, formatDayOptionLabel, dayRoleNote } from "@/components/trip/format";
-import type { DayOption, MapMarkerData, TripItemData } from "@/components/trip/types";
+import type {
+  DayOption,
+  LinkablePurchase,
+  MapMarkerData,
+  TripItemData,
+} from "@/components/trip/types";
 
 function isTripItemType(value: unknown): value is TripItemType {
   return typeof value === "string" && (TRIP_ITEM_TYPES as readonly string[]).includes(value);
@@ -105,21 +110,42 @@ export default async function TripPage({
     );
   }
 
-  const [itemsRaw, cityBreakCategory] = await Promise.all([
-    prisma.tripItem.findMany({ where: { tripId: trip.id } }),
-    prisma.category.findFirst({ where: { seasonId: season.id, kind: "CITY_BREAK" } }),
+  const [itemsRaw, cityBreakCategories] = await Promise.all([
+    prisma.tripItem.findMany({
+      where: { tripId: trip.id },
+      include: { purchase: { select: { id: true, pricePence: true } } },
+    }),
+    prisma.category.findMany({ where: { seasonId: season.id, kind: "CITY_BREAK" } }),
   ]);
+  // The budget bar has only ever shown one CITY_BREAK category's totals —
+  // keep that behaviour, but the "Paid via" selects below pool purchases
+  // across every CITY_BREAK-kind category, in case there's more than one.
+  const cityBreakCategory = cityBreakCategories[0] ?? null;
+  const cityBreakCategoryIds = cityBreakCategories.map((c) => c.id);
 
   let spentPence = 0;
-  if (cityBreakCategory) {
-    const catPurchases = await prisma.purchase.findMany({
-      where: { categoryId: cityBreakCategory.id },
-      select: { pricePence: true, status: true },
+  let linkablePurchases: LinkablePurchase[] = [];
+  if (cityBreakCategoryIds.length > 0) {
+    const cityBreakPurchases = await prisma.purchase.findMany({
+      where: { categoryId: { in: cityBreakCategoryIds } },
+      select: {
+        id: true,
+        title: true,
+        pricePence: true,
+        status: true,
+        tripItem: { select: { id: true } },
+      },
     });
-    spentPence = catPurchases.reduce(
+    spentPence = cityBreakPurchases.reduce(
       (sum, p) => (isActualSpend(p.status) ? sum + p.pricePence : sum),
       0,
     );
+    linkablePurchases = cityBreakPurchases.map((p) => ({
+      id: p.id,
+      title: p.title,
+      pricePence: p.pricePence,
+      takenByItemId: p.tripItem?.id ?? null,
+    }));
   }
 
   const items: TripItemData[] = itemsRaw.map((i) => ({
@@ -133,6 +159,7 @@ export default async function TripPage({
     booked: i.booked,
     notes: i.notes,
     reference: i.reference,
+    linkedPurchase: i.purchase ? { id: i.purchase.id, pricePence: i.purchase.pricePence } : null,
   }));
 
   const days = tripDays(trip.startDate, trip.endDate);
@@ -228,6 +255,8 @@ export default async function TripPage({
         tripEndDate={dateKey(trip.endDate)}
         days={dayOptions}
         readOnly={readOnly}
+        linkablePurchases={linkablePurchases}
+        year={year}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -242,6 +271,8 @@ export default async function TripPage({
               extraMeals={g.extraMeals}
               days={dayOptions}
               readOnly={readOnly}
+              linkablePurchases={linkablePurchases}
+              year={year}
             />
           ))}
 
@@ -250,7 +281,14 @@ export default async function TripPage({
               <h3 className="font-display text-lg text-pine-deep">Unscheduled</h3>
               <div className="flex flex-col gap-2">
                 {unscheduledItems.map((item) => (
-                  <ItemRow key={item.id} item={item} days={dayOptions} readOnly={readOnly} />
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    days={dayOptions}
+                    readOnly={readOnly}
+                    linkablePurchases={linkablePurchases}
+                    year={year}
+                  />
                 ))}
               </div>
             </div>
@@ -266,6 +304,7 @@ export default async function TripPage({
               defaultType={defaultType}
               defaultDate={defaultDate}
               defaultSlot={defaultSlot}
+              linkablePurchases={linkablePurchases}
             />
             {showTraditionCard && (
               <TraditionCard tripId={trip.id} missing={missingTraditions} />

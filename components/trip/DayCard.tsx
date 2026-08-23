@@ -2,7 +2,7 @@ import { ItemRow } from "./ItemRow";
 import { MealPlaceholder } from "./MealPlaceholder";
 import { formatDayHeading } from "./format";
 import type { MealSlot } from "@/lib/trip";
-import type { DayOption, TripItemData } from "./types";
+import type { DayOption, LinkablePurchase, TripItemData } from "./types";
 
 export function DayCard({
   day,
@@ -12,6 +12,8 @@ export function DayCard({
   extraMeals,
   days,
   readOnly = false,
+  linkablePurchases,
+  year,
 }: {
   day: Date;
   roleNote: string | null;
@@ -20,6 +22,8 @@ export function DayCard({
   extraMeals: TripItemData[];
   days: DayOption[];
   readOnly?: boolean;
+  linkablePurchases: LinkablePurchase[];
+  year?: string;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm">
@@ -35,19 +39,43 @@ export function DayCard({
       {nonMealItems.length > 0 && (
         <div className="flex flex-col gap-2">
           {nonMealItems.map((item) => (
-            <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />
+            <ItemRow
+              key={item.id}
+              item={item}
+              days={days}
+              readOnly={readOnly}
+              linkablePurchases={linkablePurchases}
+              year={year}
+            />
           ))}
         </div>
       )}
 
       <div className="flex flex-col gap-2">
         {mealSlots.map(({ slot, item }) => {
-          if (item) return <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />;
+          if (item)
+            return (
+              <ItemRow
+                key={item.id}
+                item={item}
+                days={days}
+                readOnly={readOnly}
+                linkablePurchases={linkablePurchases}
+                year={year}
+              />
+            );
           if (readOnly) return null;
           return <MealPlaceholder key={slot} date={day} slot={slot} />;
         })}
         {extraMeals.map((item) => (
-          <ItemRow key={item.id} item={item} days={days} readOnly={readOnly} />
+          <ItemRow
+            key={item.id}
+            item={item}
+            days={days}
+            readOnly={readOnly}
+            linkablePurchases={linkablePurchases}
+            year={year}
+          />
         ))}
       </div>
 

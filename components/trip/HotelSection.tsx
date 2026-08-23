@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BedDouble } from "lucide-react";
 import { HotelCard } from "./HotelCard";
-import type { DayOption, TripItemData } from "./types";
+import type { DayOption, LinkablePurchase, TripItemData } from "./types";
 
 /** "Where we're staying": every HOTEL TripItem as a feature card, above the
  *  day-by-day itinerary — hotels live only here now, not in the day cards
@@ -12,6 +12,8 @@ export function HotelSection({
   tripEndDate,
   days,
   readOnly = false,
+  linkablePurchases,
+  year,
 }: {
   hotels: TripItemData[];
   /** "YYYY-MM-DD" */
@@ -20,6 +22,8 @@ export function HotelSection({
   tripEndDate: string;
   days: DayOption[];
   readOnly?: boolean;
+  linkablePurchases: LinkablePurchase[];
+  year?: string;
 }) {
   return (
     <section className="flex flex-col gap-3">
@@ -37,6 +41,8 @@ export function HotelSection({
               tripEndDate={tripEndDate}
               days={days}
               readOnly={readOnly}
+              linkablePurchases={linkablePurchases}
+              year={year}
             />
           ))}
         </div>

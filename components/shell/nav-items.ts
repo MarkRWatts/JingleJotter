@@ -5,6 +5,7 @@ import {
   Gift,
   Users,
   Lightbulb,
+  Mail,
   CalendarRange,
   Luggage,
   type LucideIcon,
@@ -24,6 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/purchases", label: "Purchases", tabLabel: "Purchases", icon: Gift },
   { href: "/people", label: "People", tabLabel: "People", icon: Users },
   { href: "/ideas", label: "Ideas", tabLabel: "Ideas", icon: Lightbulb },
+  { href: "/cards", label: "Cards", tabLabel: "Cards", icon: Mail },
   { href: "/trip", label: "City Break", tabLabel: "Trip", icon: Luggage },
   { href: "/seasons", label: "Seasons", tabLabel: "Seasons", icon: CalendarRange },
 ];
