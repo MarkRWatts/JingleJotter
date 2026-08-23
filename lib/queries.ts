@@ -56,13 +56,15 @@ export type PersonSummary = {
 /**
  * Per-person gift spend vs allocated budget for a season. Only includes
  * people with a budget or at least one purchase this season, and — because
- * this powers the dashboard the signed-in user sees — always omits the
- * Person linked to `currentUserId` so nobody can see spend/status info
- * about gifts bought for themselves.
+ * this powers the dashboard the signed-in user sees — omits the Person
+ * linked to `currentUserId` so nobody can see spend/status info about
+ * gifts bought for themselves. Pass `null` to skip that omission: archived
+ * seasons' summaries deliberately show everyone, since those surprises
+ * have long since been unwrapped.
  */
 export async function getPersonSummaries(
   seasonId: string,
-  currentUserId: string,
+  currentUserId: string | null,
 ): Promise<PersonSummary[]> {
   const people = await prisma.person.findMany({
     include: {
@@ -73,7 +75,7 @@ export async function getPersonSummaries(
   });
 
   return people
-    .filter((person) => person.linkedUser?.id !== currentUserId)
+    .filter((person) => currentUserId === null || person.linkedUser?.id !== currentUserId)
     .filter((person) => person.personBudgets.length > 0 || person.purchases.length > 0)
     .map((person) => {
       const allocatedPence = person.personBudgets[0]?.allocatedPence ?? 0;

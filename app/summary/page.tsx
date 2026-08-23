@@ -56,9 +56,14 @@ export default async function SummaryPage({
 
   const userId = session.user.id;
 
+  // Archived seasons are keepsakes: their surprises were unwrapped long ago,
+  // so the recap deliberately shows every person — viewer included. Only the
+  // active season still hides your own gifts.
+  const maskingUserId = season.active ? userId : null;
+
   const [categories, people, purchasesRaw, trip] = await Promise.all([
     getCategorySummaries(season.id),
-    getPersonSummaries(season.id, userId),
+    getPersonSummaries(season.id, maskingUserId),
     prisma.purchase.findMany({
       where: { seasonId: season.id },
       include: {
@@ -73,7 +78,9 @@ export default async function SummaryPage({
   ]);
 
   const totals = getSeasonTotals(categories);
-  const purchases = purchasesRaw.map((p) => maskPurchase(p, userId));
+  const purchases = maskingUserId
+    ? purchasesRaw.map((p) => maskPurchase(p, maskingUserId))
+    : purchasesRaw;
 
   const giftPurchases = purchases.filter((p) => p.category.kind === "GIFTS");
   const wrappedGiftCount = giftPurchases.filter((p) => p.status === "WRAPPED").length;

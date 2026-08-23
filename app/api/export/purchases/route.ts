@@ -67,7 +67,9 @@ export async function GET(request: NextRequest) {
 
   let csv = csvRow(HEADER);
   for (const purchase of purchases) {
-    const masked = maskPurchase(purchase, session.user.id);
+    // Archived seasons export unmasked — those surprises were unwrapped
+    // long ago (matches /summary's rule). Active season stays masked.
+    const masked = season.active ? maskPurchase(purchase, session.user.id) : purchase;
     csv += csvRow([
       masked.title,
       masked.category.name,
