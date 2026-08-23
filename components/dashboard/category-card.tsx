@@ -34,7 +34,11 @@ export function CategoryCard({ category }: { category: CategorySummary }) {
           <p className={`text-xs ${over ? "font-semibold text-berry" : "text-cocoa-soft"}`}>
             {over
               ? `${formatPence(Math.abs(remainingPence))} over budget`
-              : `${formatPence(remainingPence)} remaining`}
+              : plannedPence > 0
+                ? // With ideas in play the planned line below carries the
+                  // left-to-allocate figure; this one is spend-only.
+                  `${formatPence(remainingPence)} remaining`
+                : `${formatPence(remainingPence)} left to allocate`}
           </p>
         </>
       ) : (
