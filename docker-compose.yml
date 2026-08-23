@@ -15,6 +15,11 @@ services:
       AUTH_URL: ${AUTH_URL:-http://localhost:3003}
       # Running behind the shared Caddy edge terminating TLS.
       AUTH_TRUST_HOST: "true"
+      # Field-level encryption for card-contact addresses (lib/pii.ts).
+      # Optional: without it the app runs fine but saving an address is
+      # refused with a friendly error. NB env-file vars only reach the
+      # container when mapped here — adding to .env.docker alone isn't enough.
+      PII_ENCRYPTION_KEY: ${PII_ENCRYPTION_KEY:-}
     volumes:
       - data:/app/data
 

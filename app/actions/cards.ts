@@ -38,6 +38,24 @@ async function checkPersonNotTaken(
   return null;
 }
 
+/** encryptPII fails loud when PII_ENCRYPTION_KEY is missing/malformed — turn
+ *  that into a friendly ActionState error instead of a crashed request, so an
+ *  instance that hasn't set the key up yet just can't save addresses (the
+ *  rest of the card list still works). */
+function tryEncryptAddress(
+  raw: string,
+): { ok: true; value: string | null } | { ok: false; error: string } {
+  try {
+    return { ok: true, value: encryptPII(raw) };
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Address encryption isn't set up on this instance — set PII_ENCRYPTION_KEY (see the README), or leave the address empty for now.",
+    };
+  }
+}
+
 /** Create a new card contact, and its CardSeasonStatus for the season being
  *  viewed (so it immediately shows up on this year's list). */
 export async function createCardContact(
@@ -61,10 +79,13 @@ export async function createCardContact(
     if (conflict) return { error: conflict };
   }
 
+  const encrypted = tryEncryptAddress(addressRaw);
+  if (!encrypted.ok) return { error: encrypted.error };
+
   await prisma.cardContact.create({
     data: {
       name,
-      addressEnc: encryptPII(addressRaw),
+      addressEnc: encrypted.value,
       notes: notes || null,
       personId: personId || null,
       statuses: { create: { seasonId } },
@@ -98,11 +119,14 @@ export async function updateCardContact(
     if (conflict) return { error: conflict };
   }
 
+  const encrypted = tryEncryptAddress(addressRaw);
+  if (!encrypted.ok) return { error: encrypted.error };
+
   await prisma.cardContact.update({
     where: { id: contactId },
     data: {
       name,
-      addressEnc: encryptPII(addressRaw),
+      addressEnc: encrypted.value,
       notes: notes || null,
       personId: personId || null,
     },
